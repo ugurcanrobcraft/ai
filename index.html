@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spark AI - Özgün Zeka</title>
+    <title>Spark AI</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -19,7 +19,6 @@
             --border: #475569;
         }
 
-        /* Tema 29: Aydınlık Tema Desteği */
         [data-theme="light"] {
             --bg-dark: #f1f5f9;
             --bg-sidebar: #e2e8f0;
@@ -36,8 +35,8 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text); display: flex; height: 100vh; overflow: hidden; transition: background-color 0.3s; }
 
-        /* Sol Sidebar - Chat Yönetimi */
-        .sidebar { width: 280px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 15px; transition: 0.3s; }
+        /* Sol Sidebar - Mobil Uyumlu */
+        .sidebar { width: 280px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 15px; transition: 0.3s; z-index: 10; }
         .brand { display: flex; align-items: center; gap: 10px; font-size: 1.4rem; font-weight: bold; color: var(--accent); margin-bottom: 20px; }
         .btn-new-chat { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn-new-chat:hover { background: var(--accent-hover); }
@@ -45,20 +44,19 @@
         .chat-list { flex: 1; overflow-y: auto; margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
         .chat-item { background: var(--bg-card); padding: 10px 12px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; transition: 0.2s; }
         .chat-item:hover, .chat-item.active { background: var(--accent); color: white; }
-        .chat-item .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
-        .chat-item .delete-btn { opacity: 0.6; cursor: pointer; }
-        .chat-item .delete-btn:hover { opacity: 1; color: #ef4444; }
+        .chat-item .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; outline: none; }
+        .chat-actions { display: flex; gap: 6px; align-items: center; }
+        .chat-item .edit-btn, .chat-item .delete-btn { opacity: 0.6; cursor: pointer; font-size: 0.85rem; }
+        .chat-item .edit-btn:hover, .chat-item .delete-btn:hover { opacity: 1; color: #ef4444; }
 
         /* Ana Chat Alanı */
-        .main-chat { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-dark); transition: background-color 0.3s; }
+        .main-chat { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-dark); transition: background-color 0.3s; min-width: 0; }
         .chat-header { padding: 15px 20px; background: var(--bg-sidebar); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .header-actions { display: flex; gap: 10px; align-items: center; }
-        .action-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
-        .action-btn:hover { background: var(--accent); border-color: var(--accent); color: white; }
         .status-badge { background: #10b981; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; }
 
         .messages-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
-        .message { max-width: 80%; padding: 12px 16px; border-radius: 12px; line-height: 1.5; font-size: 0.95rem; word-break: break-word; white-space: pre-wrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .message { max-width: 85%; padding: 12px 16px; border-radius: 12px; line-height: 1.5; font-size: 0.95rem; word-break: break-word; white-space: pre-wrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .message.user { align-self: flex-end; background-color: var(--user-msg); color: white; border-bottom-right-radius: 2px; }
         .message.spark { align-self: flex-start; background-color: var(--bot-msg); color: var(--text); border-bottom-left-radius: 2px; border-left: 3px solid var(--accent); }
         
@@ -78,6 +76,15 @@
         .chip:hover { border-color: var(--accent); background: var(--accent); color: white; }
         .feature-chips::-webkit-scrollbar { height: 4px; }
         .feature-chips::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* Mobil Responsive Ayarları */
+        @media (max-width: 768px) {
+            body { flex-direction: column-reverse; }
+            .sidebar { width: 100%; height: 140px; padding: 10px; }
+            .chat-list { flex-direction: row; gap: 6px; overflow-x: auto; margin-top: 8px; }
+            .chat-item { min-width: 130px; flex-direction: column; align-items: flex-start; }
+            .main-chat { height: calc(100vh - 140px); }
+        }
     </style>
 </head>
 <body>
@@ -86,7 +93,7 @@
     <div class="sidebar">
         <div class="brand">
             <i class="fa-solid fa-bolt"></i>
-            <span>Spark AI</span>
+            <span>Spark</span>
         </div>
         <button class="btn-new-chat" onclick="createNewChat()">
             <i class="fa-solid fa-plus"></i> Yeni Sohbet
@@ -99,16 +106,14 @@
         <div class="chat-header">
             <div>
                 <strong id="activeChatTitle">Yeni Sohbet</strong>
-                <p style="font-size: 0.75rem; color: var(--text-muted);">Lokal Özgün Motor v2.0 | 30+ Sistem</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">Lokal Özgün Motor v2.2 | 30+ Sistem Tamamen Aktif</p>
             </div>
             <div class="header-actions">
-                <!-- Sistem 28: Dışa Aktarma -->
-                <button class="action-btn" onclick="exportChat()"><i class="fa-solid fa-download"></i> İndir</button>
                 <span class="status-badge">Çevrimiçi</span>
             </div>
         </div>
 
-        <!-- Sistem 30: Komut Kısayolları -->
+        <!-- Sistem Kısayolları -->
         <div class="feature-chips">
             <div class="chip" onclick="sendQuickCommand('/yardim')">💡 Komutlar</div>
             <div class="chip" onclick="sendQuickCommand('/hesapla 25 * 4 + 10')">🧮 Matematik</div>
@@ -117,7 +122,7 @@
             <div class="chip" onclick="sendQuickCommand('/çevir 30c')">🌡️ Çevirici</div>
             <div class="chip" onclick="sendQuickCommand('/renk #ff5733')">🎨 Renk Kodu</div>
             <div class="chip" onclick="sendQuickCommand('/tema')">🌓 Tema</div>
-            <div class="chip" onclick="sendQuickCommand('/zamanlayıcı 1')">⏱️ Zamanlayıcı (1 dk)</div>
+            <div class="chip" onclick="sendQuickCommand('/zamanlayıcı 1')">⏱️ Zamanlayıcı</div>
         </div>
 
         <div class="messages-container" id="messagesContainer"></div>
@@ -129,11 +134,13 @@
     </div>
 
     <script>
-        // Veritabanı (localStorage) Yönetimi
         let chats = JSON.parse(localStorage.getItem('spark_chats')) || [];
         let activeChatId = localStorage.getItem('spark_active_chat') || null;
         let userToDos = JSON.parse(localStorage.getItem('spark_todos')) || [];
         let currentTheme = localStorage.getItem('spark_theme') || 'dark';
+
+        // Küfür, Hakaret ve 18+ Filtresi
+        const badWords = ["küfür1", "küfür2", "amk", "aq", "sik", "orospu", "piç", "mal", "salak", "18+"];
 
         window.onload = () => {
             applyTheme(currentTheme);
@@ -152,12 +159,11 @@
             localStorage.setItem('spark_theme', currentTheme);
         }
 
-        // Sistem 27: Yeni Chat / Geçmiş Chat Geçişleri
         function createNewChat() {
             const newChat = {
                 id: 'chat_' + Date.now(),
                 title: 'Sohbet ' + (chats.length + 1),
-                messages: [{ sender: 'spark', text: 'Merhaba! Ben **Spark v2.0**. Matematik, kodlama, metin analizi, oyunlar ve çok daha fazlasını içeren 30 sisteme sahibim ⚡️ Tüm özellikleri görmek için `/yardim` yazabilirsin.' }]
+                messages: [{ sender: 'spark', text: 'Merhaba! Ben **Spark v2.2**. Tüm 30+ sistemim, mobil/PC uyumlu altyapım ve güvenlik korumamla tamamen aktifim. Nasıl yardımcı olabilirim?' }]
             };
             chats.unshift(newChat);
             activeChatId = newChat.id;
@@ -174,14 +180,32 @@
                 item.className = `chat-item ${chat.id === activeChatId ? 'active' : ''}`;
                 item.onclick = () => switchChat(chat.id);
                 item.innerHTML = `
-                    <span class="title">${chat.title}</span>
-                    <i class="fa-solid fa-trash delete-btn" onclick="event.stopPropagation(); deleteChat('${chat.id}')"></i>
+                    <span class="title" id="title_${chat.id}">${chat.title}</span>
+                    <div class="chat-actions">
+                        <i class="fa-solid fa-pen edit-btn" onclick="event.stopPropagation(); renameChat('${chat.id}')" title="İsmi Düzenle"></i>
+                        <i class="fa-solid fa-trash delete-btn" onclick="event.stopPropagation(); deleteChat('${chat.id}')" title="Sil"></i>
+                    </div>
                 `;
                 listEl.appendChild(item);
             });
         }
 
+        function renameChat(id) {
+            const chat = chats.find(c => c.id === id);
+            if (!chat) return;
+            const newTitle = prompt("Yeni sohbet adını girin:", chat.title);
+            if (newTitle && newTitle.trim() !== "") {
+                chat.title = newTitle.trim();
+                saveState();
+                renderChatList();
+                if (activeChatId === id) {
+                    document.getElementById('activeChatTitle').innerText = chat.title;
+                }
+            }
+        }
+
         function switchChat(id) { activeChatId = id; saveState(); renderChatList(); loadMessages(); }
+        
         function deleteChat(id) {
             chats = chats.filter(c => c.id !== id);
             if (chats.length === 0) createNewChat();
@@ -198,7 +222,6 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // Sistem 13: Markdown Önizleyici
         function formatMarkdown(text) {
             let formatted = text.replace(/```([\s\S]*?)```/g, '<div class="code-block">$1</div>');
             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<span class="md-bold">$1</span>');
@@ -215,12 +238,32 @@
             container.scrollTop = container.scrollHeight;
         }
 
+        function checkSafety(text) {
+            const lower = text.toLowerCase();
+            return badWords.some(word => lower.includes(word));
+        }
+
         function sendMessage() {
             const input = document.getElementById('userInput');
             const query = input.value.trim();
             if (!query) return;
 
             const currentChat = chats.find(c => c.id === activeChatId);
+            
+            // Küfür / Hakaret / 18+ Kontrolü ve Uyarı
+            if (checkSafety(query)) {
+                currentChat.messages.push({ sender: 'user', text: query });
+                appendMessageUI('user', query);
+                input.value = '';
+                setTimeout(() => {
+                    const warning = "⚠️ **Uyarı:** Mesajınız küfür, hakaret veya uygunsuz içerik barındırdığı için engellendi. Lütfen daha uygun bir dille devam edin.";
+                    currentChat.messages.push({ sender: 'spark', text: warning });
+                    appendMessageUI('spark', warning);
+                    saveState();
+                }, 300);
+                return;
+            }
+
             if (currentChat.messages.length <= 1) {
                 currentChat.title = query.length > 20 ? query.substring(0, 20) + '...' : query;
                 renderChatList();
@@ -245,20 +288,6 @@
             sendMessage();
         }
 
-        // Sistem 28: Sohbeti Dışa Aktar
-        function exportChat() {
-            const currentChat = chats.find(c => c.id === activeChatId);
-            if (!currentChat) return;
-            let content = `Spark AI - ${currentChat.title}\n\n`;
-            currentChat.messages.forEach(m => { content += `[${m.sender.toUpperCase()}]: ${m.text}\n\n`; });
-            const blob = new Blob([content], { type: "text/plain" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `Spark_Chat_${currentChat.title.replace(/\s+/g, '_')}.txt`;
-            a.click();
-        }
-
-        // Sistem 29: Tema Değişimi
         function applyTheme(theme) {
             document.body.setAttribute('data-theme', theme);
             currentTheme = theme;
@@ -266,25 +295,25 @@
         }
 
         /* =========================================================
-           ⚡️ SPARK ÖZGÜN YAPAY ZEKA VE MANTIK MOTORU (30+ SİSTEM) 
+           ⚡️ SPARK ÖZGÜN YAPAY ZEKA VE 30+ SİSTEM MOTORU
            ========================================================= */
         function processSparkLogic(input) {
             const raw = input.trim();
             const clean = raw.toLowerCase();
 
-            // 1. Sohbet ve Karakter
-            if (clean.match(/^(selam|merhaba|sa|hey|spark|hi)/)) return "Selam! Ben Spark v2.0. Kod yazmaktan matematik çözmeye kadar 30'dan fazla sistemim aktif. Nasıl yardımcı olabilirim?";
-            if (clean.includes("nasılsın") || clean.includes("naber")) return "Algoritmalarım pırıl pırıl, mantık motorum %100! ⚡️ Sen nasılsın?";
-            if (clean.includes("kimsin") || clean.includes("nedir")) return "Ben Spark! Tamamen yerel tarayıcı hafızasında çalışan, sıfır dış API destekli özgün bir yapay zeka asistanıyım.";
+            // 1. Doğal Sohbet / Karakter Yanıtları
+            if (clean.match(/^(selam|merhaba|sa|hey|spark|hi)/)) return "Selam! Ben Spark v2.2. Tüm 30+ sistemimle buradayım. Nasıl yardımcı olabilirim?";
+            if (clean.includes("nasılsın") || clean.includes("naber")) return "Algoritmalarım ve 30+ sistemim tam kapasite çalışıyor! ⚡️ Sen nasılsın?";
+            if (clean.includes("kimsin") || clean.includes("nedir")) return "Ben Spark! Tamamen tarayıcınızda çalışan, 30+ farklı araca ve akıllı mantık motoruna sahip özgün bir yapay zeka asistanıyım.";
 
-            // 2. Matematik Motoru (/hesapla)
+            // 2. Matematik Motoru (/hesapla veya direkt işlem)
             if (clean.startsWith("/hesapla") || clean.match(/^[0-9\s\+\-\*\/\(\)\^\.]+=?$/)) {
                 try {
                     let expr = clean.replace("/hesapla", "").replace(/[^0-9\+\-\*\/\.\(\)\^]/g, "");
                     expr = expr.replace(/\^/g, "**");
                     if (!expr) throw "Boş";
                     let result = Function(`'use strict'; return (${expr})`)();
-                    return `🧮 **Matematik İşlemi Başarılı:**\n\`${expr}\` = **${result}**`;
+                    return `🧮 **Matematik Sonucu:**\n\`${expr}\` = **${result}**`;
                 } catch (e) { return "Matematiksel ifadeyi tam anlayamadım. Örnek: `/hesapla 45 * 2 + 10`"; }
             }
 
@@ -295,9 +324,9 @@
                 return "Hangi dilde kod şablonu istersin? (Örn: `/kod html`, `/kod js`)";
             }
 
-            // 4. Bilgi Bulma (Örnek Sözlük)
+            // 4. Bilgi Bulma / Sözlük
             if (clean.includes("nedir")) {
-                if(clean.includes("yapay zeka")) return "Yapay Zeka (AI), bilgisayarların insan zekasını taklit ederek öğrenme, problem çözme ve karar verme yetenekleri kazanmasıdır.";
+                if(clean.includes("yapay zeka")) return "Yapay Zeka (AI), bilgisayarların insan zekasını taklit ederek öğrenme ve karar verme yetenekleri kazanmasıdır.";
                 if(clean.includes("html")) return "HTML, web sayfalarının iskeletini oluşturan standart işaretleme dilidir.";
             }
 
@@ -308,7 +337,7 @@
                 return `🔑 **Güvenli Şifren:**\n\`\`\`${pass}\`\`\``;
             }
 
-            // 6. Metin Özetleyici (Simülasyon - İlk ve son cümleyi alır)
+            // 6. Metin Özetleyici
             if (clean.startsWith("/özetle")) {
                 const text = raw.substring(7).trim();
                 const sentences = text.split(/(?<=[.!?])\s+/);
@@ -316,14 +345,14 @@
                 return `📝 **Metin Özeti:**\n${sentences[0]} .. ${sentences[sentences.length -1]}`;
             }
 
-            // 7. Kelime/Karakter Sayacı
+            // 7. Kelime / Karakter Sayacı
             if (clean.startsWith("/sayaç") || clean.startsWith("sayaç")) {
                 const text = raw.replace(/\/?sayaç/i, "").trim();
                 if(!text) return "Sayılacak metni girmedin.";
                 return `📊 **Metin Analizi:**\n• Karakter (Boşluklu): ${text.length}\n• Karakter (Boşluksuz): ${text.replace(/\s/g, '').length}\n• Kelime: ${text.split(/\s+/).length}`;
             }
 
-            // 8. Birim Çevirici (Sıcaklık ve Uzunluk)
+            // 8. Birim Çevirici
             if (clean.startsWith("/çevir")) {
                 const val = clean.replace("/çevir", "").trim();
                 if (val.includes("c")) {
@@ -337,7 +366,7 @@
                 return "Birim çevirici formatı: `/çevir 30c` veya `/çevir 5km`";
             }
 
-            // 9. Hex/RGB Renk Dönüştürücü
+            // 9. Renk Dönüştürücü
             if (clean.startsWith("/renk")) {
                 let hex = clean.replace("/renk", "").trim();
                 if(!hex.startsWith("#")) hex = "#" + hex;
@@ -348,14 +377,14 @@
                 return "Geçerli bir HEX kodu girmediniz. Örn: `/renk #ff5733`";
             }
 
-            // 10. Base64 Şifreleme/Çözme
+            // 10. Base64 Şifreleme / Çözme
             if (clean.startsWith("/base64 kodla")) return `🔐 **Base64:** \`${btoa(raw.replace("/base64 kodla", "").trim())}\``;
             if (clean.startsWith("/base64 çöz")) {
                 try { return `🔓 **Çözüldü:** \`${atob(raw.replace("/base64 çöz", "").trim())}\``; } 
                 catch(e) { return "Geçersiz Base64 formatı."; }
             }
 
-            // 11. Rastgele Sayı
+            // 11. Rastgele Sayı Üretici
             if (clean.startsWith("/rastgele")) {
                 const nums = clean.match(/\d+/g);
                 if (nums && nums.length === 2) {
@@ -365,7 +394,7 @@
                 return "Format: `/rastgele 1 100`";
             }
 
-            // 12. Kronometre/Zamanlayıcı
+            // 12. Zamanlayıcı
             if (clean.startsWith("/zamanlayıcı")) {
                 const mins = parseInt(clean.replace(/\D/g, ""));
                 if (!mins || mins < 1) return "Lütfen geçerli bir dakika girin. Örn: `/zamanlayıcı 5`";
@@ -376,14 +405,14 @@
                     appendMessageUI('spark', alertMsg);
                     saveState();
                 }, mins * 60000);
-                return `⏱️ Zamanlayıcı **${mins} dakika** için başlatıldı. Süre dolduğunda sana buradan haber vereceğim.`;
+                return `⏱️ Zamanlayıcı **${mins} dakika** için başlatıldı. Süre dolduğunda haber vereceğim.`;
             }
 
-            // 14. Büyük/Küçük Harf Dönüştürücü
+            // 14. Büyük / Küçük Harf Dönüştürücü
             if (clean.startsWith("/büyük")) return `🔠 **Sonuç:**\n${raw.replace("/büyük", "").trim().toUpperCase()}`;
             if (clean.startsWith("/küçük")) return `🔡 **Sonuç:**\n${raw.replace("/küçük", "").trim().toLowerCase()}`;
 
-            // 15, 16. Eğlence: Zar, Yazı Tura, Taş Kağıt Makas
+            // 15, 16. Zar, Yazı Tura, Taş Kağıt Makas
             if (clean === "/zarat") return `🎲 Zar atıldı: **${Math.floor(Math.random() * 6) + 1}** geldi!`;
             if (clean === "/yazıtura") return `🪙 Para havaya atıldı... Sonuç: **${Math.random() > 0.5 ? "YAZI" : "TURA"}**!`;
             if (clean.startsWith("/tkm")) {
@@ -406,7 +435,7 @@
                 return `💡 **Günün Sözü:**\n${quotes[Math.floor(Math.random() * quotes.length)]}`;
             }
 
-            // 19. ASCII Sanatı Üretici (Basit Simülasyon)
+            // 19. ASCII Sanatı
             if (clean.startsWith("/ascii")) {
                 const text = raw.replace("/ascii", "").trim().toUpperCase();
                 return `🎨 **ASCII Tarzı:**\n\`\`\`\n[ ${text.split('').join(' ][ ')} ]\n\`\`\``;
@@ -419,7 +448,7 @@
             if (clean.startsWith("/palindrom")) {
                 const word = clean.replace("/palindrom", "").trim().replace(/\s/g, '');
                 const reversed = word.split('').reverse().join('');
-                if (word === reversed) return `✅ **Evet!** "${word}" kelimesi tersten de aynı okunur (Palindrom).`;
+                if (word === reversed) return `✅ **Evet!** "${word}" tersten de aynı okunur (Palindrom).`;
                 return `❌ **Hayır.** "${word}" tersten "${reversed}" olarak okunur.`;
             }
 
@@ -446,7 +475,7 @@
             // 25. ELI5 Modu (5 Yaşındakine Anlat)
             if (clean.startsWith("/eli5")) {
                 const topic = raw.replace("/eli5", "").trim();
-                return `🧸 **5 Yaşındakine Anlatım Modu:**\n"${topic}" konusu, tıpkı legoları üst üste dizmek gibidir. Karmaşık görünür ama aslında küçük ve basit parçaların bir araya gelmesiyle oluşur.`;
+                return `🧸 **5 Yaşındakine Anlatım Modu:**\n"${topic}" konusu, tıpkı legoları üst üste dizmek gibidir. Küçük parçaların birleşmesiyle oluşur.`;
             }
 
             // 26. To-Do (Görev) Listesi
@@ -469,7 +498,7 @@
 
             // 30. Yardım ve Komut Listesi
             if (clean === "/yardim" || clean === "/yardım") {
-                return `⚡️ **Spark v2.0 - Tüm Komutlar (30 Sistem):**
+                return `⚡️ **Spark v2.2 - Tüm Komutlar (30+ Sistem):**
 **⚙️ Temel & Araçlar:**
 • \`/hesapla [işlem]\` - Matematik motoru
 • \`/şifre\` - Şifre üretir
@@ -503,7 +532,7 @@
 `;
             }
 
-            return "Bunu tam anlayamadım. Sağladığım 30 aracı ve komutları görmek için **/yardim** yazabilirsin! ⚡️";
+            return "Bunu normal bir sohbet olarak değerlendirdim. 30'dan fazla sistemi ve komutu görmek için **/yardim** yazabilirsin! ⚡️";
         }
     </script>
 </body>
