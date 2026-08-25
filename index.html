@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spark AI - 30+ Sistemli Özgün Zeka</title>
+    <title>Spark AI - Özgün Zeka</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -290,7 +290,7 @@
 
             // 3. Kodlama Asistanı
             if (clean.startsWith("/kod") || clean.includes("html kodu") || clean.includes("javascript")) {
-                if (clean.includes("html")) return "💻 **Temel HTML5 Şablonu:**\n```html\n<!DOCTYPE html>\n<html lang=\"tr\">\n<head>\n  <title>Spark</title>\n</head>\n<body>\n  <h1>Merhaba Dünya!</h1>\n</body>\n</html>\n```";
+                if (clean.includes("html")) return "💻 **Temel HTML Şablonu:**\n```html\n<!DOCTYPE html>\n<html lang=\"tr\">\n<head>\n  <title>Spark</title>\n</head>\n<body>\n  <h1>Merhaba Dünya!</h1>\n</body>\n</html>\n```";
                 if (clean.includes("js") || clean.includes("javascript")) return "💻 **JS Fetch Örneği:**\n```javascript\nfetch('api.url')\n  .then(res => res.json())\n  .then(data => console.log(data));\n```";
                 return "Hangi dilde kod şablonu istersin? (Örn: `/kod html`, `/kod js`)";
             }
