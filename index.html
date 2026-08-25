@@ -140,7 +140,7 @@
         let currentTheme = localStorage.getItem('spark_theme') || 'dark';
 
         // Küfür, Hakaret ve 18+ Filtresi
-        const badWords = ["küfür1", "küfür2", "amk", "aq", "sik", "orospu", "piç", "mal", "salak", "18+"];
+        const badWords = ["küfür", "salak", "mal", "amk", "aq", "sik", "orospu", "piç", "mal", "salak", "18+"];
 
         window.onload = () => {
             applyTheme(currentTheme);
@@ -327,6 +327,7 @@
             // 4. Bilgi Bulma / Sözlük
             if (clean.includes("nedir")) {
                 if(clean.includes("yapay zeka")) return "Yapay Zeka (AI), bilgisayarların insan zekasını taklit ederek öğrenme ve karar verme yetenekleri kazanmasıdır.";
+                if(clean.includes("spark")) return "Spark Benim! Senin Ai Destekçin!";
                 if(clean.includes("html")) return "HTML, web sayfalarının iskeletini oluşturan standart işaretleme dilidir.";
             }
 
@@ -423,7 +424,7 @@
 
             // 17. Kelime Oyunu (Anagram)
             if (clean === "/oyun kelime") {
-                const words = ["javascript", "yazılım", "algoritma", "geliştirici"];
+                const words = ["javascript", "yazılım", "algoritma", "geliştirici", "developer", "development", "python", "html", "kodlama", "terminal"];
                 const word = words[Math.floor(Math.random() * words.length)];
                 const shuffled = word.split('').sort(() => 0.5 - Math.random()).join('');
                 return `🧩 **Kelime Oyunu:**\nŞu kelimeyi bulmaya çalış: **${shuffled.toUpperCase()}**\n*(İpucu: Yazılım ile ilgili)*`;
