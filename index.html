@@ -322,28 +322,43 @@ Kısa, net ve zekice yanıtlar ver. Gereksiz uzatmalardan kaçın. Eğer bir kod
             sendMessage();
         }
 
-        // Gemini API İstek Fonksiyonu (Düzeltilmiş Versiyon)
+                // Gemini API İstek Fonksiyonu (Yeni cURL Formatı)
         async function fetchSparkAPI(chatHistory) {
-            if(API_KEY === "BURAYA_API_ANAHTARINI_YAZ") {
-                return "⚠️ **Hata:** Geliştirici henüz Gemini API anahtarını koda eklememiş. Lütfen kaynak koddan `API_KEY` değişkenini güncelleyin!";
+            if(!API_KEY || API_KEY.includes("BURAYA")) {
+                return "⚠️ API anahtarı eksik veya geçersiz.";
             }
 
-            // 1. Sohbet geçmişini API'nin anlayacağı formata çeviriyoruz
-            let apiContents = chatHistory.map(msg => ({
-                role: msg.sender === 'user' ? 'user' : 'model',
-                parts: [{ text: msg.text }]
-            }));
+            // Sohbet geçmişini API formatına dönüştür
+            let apiContents = [];
+            for (let i = 0; i < chatHistory.length; i++) {
+                let role = chatHistory[i].sender === 'user' ? 'user' : 'model';
+                let text = chatHistory[i].text;
+                
+                if (role === 'model' && text.includes("⚠️")) continue;
 
-            // 2. KRİTİK DÜZELTME: Gemini API her zaman "user" rolü ile başlamak zorundadır.
-            // Eğer dizideki ilk mesaj 'model' (Spark selamlama mesajı) ise, onu API payload'ından çıkarıyoruz.
-            if (apiContents.length > 0 && apiContents[0].role === 'model') {
-                apiContents.shift(); 
+                if (apiContents.length === 0) {
+                    if (role === 'user') apiContents.push({ role, parts: [{ text }] });
+                } else {
+                    if (apiContents[apiContents.length - 1].role === role) {
+                        apiContents[apiContents.length - 1].parts[0].text += "\n" + text;
+                    } else {
+                        apiContents.push({ role, parts: [{ text }] });
+                    }
+                }
+            }
+
+            if (apiContents.length === 0) {
+                return "⚠️ Gönderilecek geçerli mesaj bulunamadı.";
             }
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${API_KEY}`, {
+                // Yeni endpoint ve header yapısı kullanılıyor
+                const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent", {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-goog-api-key': API_KEY // Anahtar artık header üzerinden gönderiliyor
+                    },
                     body: JSON.stringify({
                         system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
                         contents: apiContents
@@ -352,22 +367,21 @@ Kısa, net ve zekice yanıtlar ver. Gereksiz uzatmalardan kaçın. Eğer bir kod
 
                 const data = await response.json();
                 
-                // 3. Eğer API'den doğrudan bir hata mesajı geliyorsa bunu ekrana yazdır ki sorunu bilelim
-                if (data.error) {
-                    console.error("API Hata Detayı:", data.error);
-                    return `⚠️ **API Hatası:** ${data.error.message}`;
+                if (!response.ok) {
+                    console.error("API Hata Detayı:", data);
+                    return `⚠️ **API Hatası (${response.status}):** ${data.error ? data.error.message : 'Bilinmeyen Hata'}`;
                 }
                 
                 if (data.candidates && data.candidates.length > 0) {
                     return data.candidates[0].content.parts[0].text;
                 } else if(data.promptFeedback && data.promptFeedback.blockReason) {
-                     return "⚠️ Sistem kurallarım gereği bu içeriği (Güvenlik Koruması) oluşturamam. Lütfen başka bir şey sor.";
+                     return "⚠️ Sistem kurallarım gereği bu içeriği oluşturamam.";
                 } else {
-                    return "⚠️ İşlem sırasında beklenmeyen bir veri yapısı geldi.";
+                    return "⚠️ API'den boş yanıt döndü.";
                 }
             } catch (error) {
-                console.error("Fetch Hatası:", error);
-                return "🔌 Sunucu bağlantım koptu. Lütfen internet bağlantını kontrol et.";
+                console.error("Bağlantı Hatası:", error);
+                return "🔌 Sunucu bağlantısı kurulamadı.";
             }
         }
         
