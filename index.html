@@ -319,10 +319,7 @@
             const raw = input.trim();
             const clean = raw.toLowerCase();
 
-            // 1. Doğal Sohbet / Karakter Yanıtları
-            if (clean.match(/^(selam|merhaba|sa|hey|hi|hello)/)) return "Selam! Ben Spark! Tüm sistemlerimle buradayım. Nasıl yardımcı olabilirim?";
-            if (clean.includes("kimsin") || clean.includes("sen nesin")) return "Ben Spark! Tamamen tarayıcınızda çalışan, 30+ farklı araca ve akıllı mantık motoruna sahip özgün bir yapay zeka asistanıyım.";
-
+            
             // 2. Doğal Dil Matematik İşlemi
             let mathMatch = clean.match(/^(?:\/hesapla|hesapla|topla|çıkar|çarp|böl|matematik yap|sonucu bul)\s*(.*)/i) || [];
             let mathExpr = (mathMatch[1] || clean).replace(/[^0-9\+\-\*\/\.\(\)\^]/g, "");
@@ -521,7 +518,10 @@
                     return ansList[Math.floor(Math.random() * ansList.length)];
                 }
             }
-
+            // 1. Doğal Sohbet / Karakter Yanıtları
+            if (clean.match(/^(selam|merhaba|sa|hey|hi|hello)/)) return "Selam! Ben Spark! Tüm sistemlerimle buradayım. Nasıl yardımcı olabilirim?";
+            if (clean.includes("kimsin") || clean.includes("sen nesin")) return "Ben Spark! Tamamen tarayıcınızda çalışan, 30+ farklı araca ve akıllı mantık motoruna sahip özgün bir yapay zeka asistanıyım.";
+            
             // 14. Yardım
             if (clean.match(/neler yapabilirsin|komutlar|yardım|help|\/yardim|\/yardım/)) {
                 return `⚡️ **Spark - Neler Yapabilirim? (30+ Sistem):**
