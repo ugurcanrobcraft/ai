@@ -645,7 +645,7 @@
             }
             if (clean.match(/^\/görevler|görevlerim|görev listesi/)) {
                 if (userToDos.length === 0) return "📋 Görev listen boş!\n *Spark Hata Yapa Bilir*";
-                return "📋 **Görev Listeniz:**\n" + userToDos.map((t, i) => `${i + 1}. ${t}`).join("\n") + \n *Spark Hata Yapa Bilir*;
+                return "📋 **Görev Listeniz:**\n" + userToDos.map((t, i) => `${i + 1}. ${t}`).join("\n") + "\n *Spark Hata Yapa Bilir*";
             }
             if (clean.match(/^\/görev temizle|görevleri sil|görev sil|görev temizle/)) { userToDos = []; saveState(); return "🗑️ Tüm görevler silindi.\n *Spark Hata Yapa Bilir*"; }
 
@@ -659,7 +659,7 @@
             for (let i = 0; i < chatDb.length; i++) {
                 if (chatDb[i].keys.some(k => clean.includes(k))) {
                     const ansList = chatDb[i].answers;
-                    return ansList[Math.floor(Math.random() * ansList.length)] + \n *Spark Hata Yapa Bilir*;
+                    return ansList[Math.floor(Math.random() * ansList.length)] + "\n *Spark Hata Yapa Bilir*";
                 }
             }
             // 1. Doğal Sohbet / Karakter Yanıtları
@@ -727,7 +727,7 @@
     "Houston, bir sorunumuz var! Bu komutu tanımıyorum ama öğrenmeye açığım. 🚀"
 ];
 
-            return defAnswers[Math.floor(Math.random() * defAnswers.length)];
+            return defAnswers[Math.floor(Math.random() * defAnswers.length)] + "\n *Spark Hata Yapa Bilir*";
         }
     </script>
 </body>
