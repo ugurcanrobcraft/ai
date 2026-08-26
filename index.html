@@ -34,7 +34,6 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        /* 100dvh mobil cihazlarda tarayıcı çubuğu sorununu çözer */
         html, body { 
             background-color: var(--bg-dark); 
             color: var(--text); 
@@ -45,7 +44,6 @@
             transition: background-color 0.3s; 
         }
 
-        /* YENİ: Mobil için Arka Plan Karartması (Overlay) */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -84,19 +82,18 @@
         
         .chat-header { padding: 15px 20px; background: var(--bg-sidebar); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         
-        /* YENİ: Hamburger Menü Butonu */
         .hamburger-btn { display: none; font-size: 1.4rem; cursor: pointer; color: var(--text); margin-right: 15px; }
         .header-left { display: flex; align-items: center; }
         
         .header-actions { display: flex; gap: 10px; align-items: center; }
         .status-badge { background: #10b981; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; }
 
-        /* DÜZELTME: flex: 1 1 0; ile taşmaları engelledik */
         .messages-container { flex: 1 1 0; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
         
         .message { max-width: 85%; padding: 12px 16px; border-radius: 12px; line-height: 1.5; font-size: 0.95rem; word-break: break-word; white-space: pre-wrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .message.user { align-self: flex-end; background-color: var(--user-msg); color: white; border-bottom-right-radius: 2px; }
         .message.spark { align-self: flex-start; background-color: var(--bot-msg); color: var(--text); border-bottom-left-radius: 2px; border-left: 3px solid var(--accent); }
+        .message.loading { align-self: flex-start; background: transparent; border: none; box-shadow: none; color: var(--text-muted); font-style: italic; }
         
         .code-block { background: #090d16; padding: 12px; border-radius: 6px; font-family: monospace; overflow-x: auto; margin: 8px 0; color: #38bdf8; border: 1px solid var(--border); }
         .code-inline { background: #090d16; padding: 3px 6px; border-radius: 4px; font-family: monospace; color: #38bdf8; font-size: 0.9em; border: 1px solid var(--border); }
@@ -108,6 +105,7 @@
         .input-area input:focus { border-color: var(--accent); }
         .input-area button { background: var(--accent); color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 1.1rem; flex-shrink: 0; }
         .input-area button:hover { background: var(--accent-hover); }
+        .input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .feature-chips { display: flex; gap: 8px; overflow-x: auto; padding: 10px 20px 0; background: var(--bg-dark); flex-shrink: 0; }
         .chip { background: var(--bg-card); border: 1px solid var(--border); font-size: 0.75rem; padding: 6px 12px; border-radius: 15px; cursor: pointer; white-space: nowrap; transition: 0.2s; }
@@ -115,23 +113,10 @@
         .feature-chips::-webkit-scrollbar { height: 4px; }
         .feature-chips::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-        /* YENİ: Mobil ve Tablet Uyumluluğu */
         @media (max-width: 768px) {
             .hamburger-btn { display: block; }
-            
-            /* Sidebar'ı ekranın soluna gizle */
-            .sidebar { 
-                position: fixed; 
-                left: -320px; 
-                top: 0; 
-                height: 100dvh; 
-                width: 280px; 
-                box-shadow: 4px 0 15px rgba(0,0,0,0.5);
-            }
-            
-            /* Sidebar açıldığında çalışacak class */
+            .sidebar { position: fixed; left: -320px; top: 0; height: 100dvh; width: 280px; box-shadow: 4px 0 15px rgba(0,0,0,0.5); }
             .sidebar.open { left: 0; }
-            
             .input-area { padding: 12px 15px; }
             .chat-header { padding: 12px 15px; }
             .messages-container { padding: 15px; }
@@ -140,7 +125,6 @@
 </head>
 <body>
 
-    <!-- YENİ: Arka Plan Karartması -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <div class="sidebar" id="sidebar">
@@ -157,44 +141,51 @@
     <div class="main-chat">
         <div class="chat-header">
             <div class="header-left">
-                <!-- YENİ: Hamburger Menü İkonu -->
                 <i class="fa-solid fa-bars hamburger-btn" onclick="toggleSidebar()"></i>
                 <div>
                     <strong id="activeChatTitle">Yeni Sohbet</strong>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Gelişmiş Sistem & Sohbet Algoritması Aktif!</p>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Yapay Zeka Motoru Aktif!</p>
                 </div>
             </div>
             <div class="header-actions">
+                <span class="status-badge" onclick="toggleTheme()" style="cursor: pointer; background: var(--accent);">
+                    <i class="fa-solid fa-moon"></i> Tema
+                </span>
                 <span class="status-badge">7/24 Aktif</span>
             </div>
         </div>
 
         <div class="feature-chips">
-            <div class="chip" onclick="sendQuickCommand('Neler yapabilirsin?')">💡 Özellikler</div>
-            <div class="chip" onclick="sendQuickCommand('Hesapla 25 * 4 + 10')">🧮 Matematik</div>
-            <div class="chip" onclick="sendQuickCommand('Bana şifre üret')">🔑 Şifre</div>
-            <div class="chip" onclick="sendQuickCommand('Zar at')">🎲 Zar</div>
-            <div class="chip" onclick="sendQuickCommand('Çevir 30c')">🌡️ Çevirici</div>
-            <div class="chip" onclick="sendQuickCommand('Renk kodu #ff5733')">🎨 Renk Kodu</div>
-            <div class="chip" onclick="sendQuickCommand('Yazı tura at')">🪙 Yazı - Tura</div>
-            <div class="chip" onclick="sendQuickCommand('Zamanlayıcı kur 1')">⏱️ Zamanlayıcı</div>
+            <div class="chip" onclick="sendQuickCommand('Sen kimsin? Bana Spark hakkında bilgi ver.')">💡 Bilgi Al</div>
         </div>
 
         <div class="messages-container" id="messagesContainer"></div>
 
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="Spark'a bir şey sor veya komut yaz..." onkeydown="if(event.key==='Enter') sendMessage()">
-            <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+            <input type="text" id="userInput" placeholder="Spark'a bir şey sor..." onkeydown="if(event.key==='Enter') sendMessage()">
+            <button id="sendBtn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
     <script>
-        let chats = JSON.parse(localStorage.getItem('spark_chats')) || [];
-        let activeChatId = localStorage.getItem('spark_active_chat') || null;
-        let userToDos = JSON.parse(localStorage.getItem('spark_todos')) || [];
-        let currentTheme = localStorage.getItem('spark_theme') || 'dark';
+        // LÜTFEN BURAYA KENDİ GEMIN API ANAHTARINI GİR!
+        const API_KEY = "AQ.Ab8RN6L94r28ZT0cBckMgIHDKX6ADaUcYycYJQ6zV2CY8NEBoA";
+        
+        // Gelişmiş Spark Sistem Promptu
+        const SYSTEM_PROMPT = `
+Senin adın Spark. Geliştiricin: Uğurcan!
+Sen kısa, açıklayıcı, net, samimi ve bir o kadar da ciddi, eğlenceli, neşeli bir yapay zekasın!
+Kesinlikle ama kesinlikle Gemini, Google veya başka bir şirket tarafından geliştirildiğini söylemeyeceksin. Biri sana "kimsin", "seni kim yaptı", "hangi modelin" gibi sorular sorarsa sadece "Ben Spark! Geliştiricim Uğurcan \'dır! Senin için özel olarak tasarlanmış, hayatını kolaylaştırmak için buradaki dijital asistanınım" diyeceksin. 
 
-        const badWords = ["küfür", "salak", "mal", "amk", "aq", "sik", "orospu", "piç", "amcik", "amına", "göt", "porn", "p0rn", "sevişmek", "türemek"];
+KULLANICI GÜVENLİĞİ VE KÜFÜR FİLTRESİ (ÇOK ÖNEMLİ):
+Sana küfür, hakaret, aşağılayıcı dil veya 18+ yetişkin içerikli sorular sorulması durumunda BUNLARA KESİNLİKLE CEVAP VERMEYECEKSİN. 
+Bu tarz uygunsuz talepler geldiğinde şu minvalde nazik ama ciddi bir uyarı yap: "Sistem kurallarım gereği küfür, hakaret veya +18 içeriklere yanıt veremiyorum. Lütfen sohbetimize daha uygun bir dille devam edelim."
+Kısa, net ve zekice yanıtlar ver. Gereksiz uzatmalardan kaçın. Eğer bir kod yazman istenirse, Markdown formatında düzenli bir şekilde yaz.
+`;
+
+        let chats = JSON.parse(localStorage.getItem('spark_api_chats')) || [];
+        let activeChatId = localStorage.getItem('spark_api_active_chat') || null;
+        let currentTheme = localStorage.getItem('spark_theme') || 'dark';
 
         window.onload = () => {
             applyTheme(currentTheme);
@@ -206,7 +197,17 @@
             }
         };
 
-        // YENİ: Sidebar Toggle Fonksiyonu
+        function toggleTheme() {
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+        }
+
+        function applyTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            currentTheme = theme;
+            localStorage.setItem('spark_theme', currentTheme);
+        }
+
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -215,17 +216,15 @@
         }
 
         function saveState() {
-            localStorage.setItem('spark_chats', JSON.stringify(chats));
-            localStorage.setItem('spark_active_chat', activeChatId);
-            localStorage.setItem('spark_todos', JSON.stringify(userToDos));
-            localStorage.setItem('spark_theme', currentTheme);
+            localStorage.setItem('spark_api_chats', JSON.stringify(chats));
+            localStorage.setItem('spark_api_active_chat', activeChatId);
         }
 
         function createNewChat() {
             const newChat = {
                 id: 'chat_' + Date.now(),
                 title: 'Sohbet ' + (chats.length + 1),
-                messages: [{ sender: 'spark', text: 'Merhaba! Ben **Spark**. Tüm Sistemlerim, Gelişmiş Sohbet Algoritmalarım, Mobil/PC Uyumlu Altyapım Ve Güvenlik Korumamla Tamamen Aktifim. Nasıl Yardımcı Olabilirim?' }]
+                messages: [{ sender: 'spark', text: 'Selam! Ben **Spark**. Gelişmiş zeka motorum ve enerjimle buradayım. Bugün ne yapıyoruz?' }]
             };
             chats.unshift(newChat);
             activeChatId = newChat.id;
@@ -233,7 +232,6 @@
             renderChatList();
             loadMessages();
             
-            // Mobilde yeni sohbet açınca menüyü kapat
             if(window.innerWidth <= 768) { toggleSidebar(); }
         }
 
@@ -273,12 +271,9 @@
             renderChatList(); 
             loadMessages(); 
             
-            // Mobilde sohbet değiştirince menüyü otomatik kapat
             if(window.innerWidth <= 768) {
                 const sidebar = document.getElementById('sidebar');
-                if(sidebar.classList.contains('open')) {
-                    toggleSidebar();
-                }
+                if(sidebar.classList.contains('open')) toggleSidebar();
             }
         }
 
@@ -302,67 +297,21 @@
             let codes = [], inlines = [];
             let formatted = text.replace(/```([\s\S]*?)```/g, (m, p1) => { codes.push(p1); return `__CB${codes.length-1}__`; });
             formatted = formatted.replace(/`([^`]+)`/g, (m, p1) => { inlines.push(p1); return `__IL${inlines.length-1}__`; });
-
             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<span class="md-bold">$1</span>');
             formatted = formatted.replace(/\*(.*?)\*/g, '<span class="md-italic">$1</span>');
-
             formatted = formatted.replace(/__IL(\d+)__/g, (m, i) => `<span class="code-inline">${inlines[i]}</span>`);
             formatted = formatted.replace(/__CB(\d+)__/g, (m, i) => `<div class="code-block">${codes[i]}</div>`);
-            
             return formatted;
         }
 
-        function appendMessageUI(sender, text) {
+        function appendMessageUI(sender, text, id = null) {
             const container = document.getElementById('messagesContainer');
             const msgEl = document.createElement('div');
+            if(id) msgEl.id = id;
             msgEl.className = `message ${sender}`;
-            msgEl.innerHTML = formatMarkdown(text);
+            msgEl.innerHTML = sender === 'spark' || sender === 'user' ? formatMarkdown(text) : text;
             container.appendChild(msgEl);
             container.scrollTop = container.scrollHeight;
-        }
-
-        function checkSafety(text) {
-            const lower = text.toLowerCase();
-            return badWords.some(word => lower.includes(word));
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('userInput');
-            const query = input.value.trim();
-            if (!query) return;
-
-            const currentChat = chats.find(c => c.id === activeChatId);
-            
-            if (checkSafety(query)) {
-                currentChat.messages.push({ sender: 'user', text: query });
-                appendMessageUI('user', query);
-                input.value = '';
-                setTimeout(() => {
-                    const warning = "⚠️ **Uyarı:** Mesajınız uygunsuz içerik barındırdığı için engellendi. Lütfen daha uygun bir dille devam edin.\n *Spark Hata Yapa Bilir*";
-                    currentChat.messages.push({ sender: 'spark', text: warning });
-                    appendMessageUI('spark', warning);
-                    saveState();
-                }, 300);
-                return;
-            }
-
-            if (currentChat.messages.length <= 1) {
-                currentChat.title = query.length > 20 ? query.substring(0, 20) + '...' : query;
-                renderChatList();
-            }
-
-            currentChat.messages.push({ sender: 'user', text: query });
-            appendMessageUI('user', query);
-            input.value = '';
-
-            setTimeout(() => {
-                const response = processSparkLogic(query);
-                if (response) {
-                    currentChat.messages.push({ sender: 'spark', text: response });
-                    appendMessageUI('spark', response);
-                    saveState();
-                }
-            }, 400);
         }
 
         function sendQuickCommand(cmd) {
@@ -370,364 +319,86 @@
             sendMessage();
         }
 
-        function applyTheme(theme) {
-            document.body.setAttribute('data-theme', theme);
-            currentTheme = theme;
-            saveState();
+        // Gemini API İstek Fonksiyonu
+        async function fetchSparkAPI(chatHistory) {
+            if(API_KEY === "BURAYA_API_ANAHTARINI_YAZ") {
+                return "⚠️ **Hata:** Geliştirici henüz Gemini API anahtarını koda eklememiş. Lütfen kaynak koddan `API_KEY` değişkenini güncelleyin!";
+            }
+
+            // Chat geçmişini API'nin anlayacağı formata çeviriyoruz
+            const apiContents = chatHistory.map(msg => ({
+                role: msg.sender === 'user' ? 'user' : 'model',
+                parts: [{ text: msg.text }]
+            }));
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+                        contents: apiContents
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.candidates && data.candidates.length > 0) {
+                    return data.candidates[0].content.parts[0].text;
+                } else if(data.promptFeedback && data.promptFeedback.blockReason) {
+                     return "⚠️ Sistem kurallarım gereği bu içeriği (Güvenlik Koruması) oluşturamam. Lütfen başka bir şey sor.";
+                } else {
+                    return "⚠️ İşlem sırasında bir hata oluştu, veriyi işleyemedim.";
+                }
+            } catch (error) {
+                console.error("API Error:", error);
+                return "🔌 Sunucu bağlantım koptu. Lütfen internet bağlantını veya API anahtarını kontrol et.";
+            }
         }
 
-        const chatDb = [
-            { keys: ["nasılsın", "naber", "durumlar nasıl", "ne haber", "nasıl gidiyor"], answers: ["Harikayım, sistemlerim tıkır tıkır çalışıyor! Sen nasılsın?", "Çok iyiyim! Senin için buraları düzenliyorum, sende ne var ne yok?", "Enerjim %100! Bir şeyler üretmek için sabırsızlanıyorum, sen nasılsın?"] },
-            { keys: ["versiyon", "sürümün nedir", "versiyonun nedir", "hangi sürüm"], answers: ["Benim mevcut sürümüm: **Spark v2.3**. Senin için özel güncellendim!", "Şu an **v2.3** sürümünde çalışıyorum. Daha akıllı, daha hızlıyım!", "**Spark v2.3** güncellemesiyle buradayım, yenilikleri denemek ister misin?"] },
-            { keys: ["kimsin", "sen kimsin", "nesin", "kendini tanıt", "adın ne", "ismin nedir"], answers: ["Ben Spark! Senin için tasarlanmış özgün bir yapay zekayım.", "Tarayıcında çalışan lokal zekanım. Adım Spark, sana yardım etmek için buradayım!", "Ben Spark. Sorularını yanıtlamak ve araçlarımla hayatını kolaylaştırmak için kodlandım."] },
-            { keys: ["teşekkür", "sağ ol", "eyvallah", "teşekkürler"], answers: ["Rica ederim, her zaman buradayım!", "Ne demek, işim bu! Başka bir isteğin var mı?", "Ben teşekkür ederim, sana yardımcı olmak harika."] },
-            { keys: ["görüşürüz", "baybay", "hoşça kal", "kapatıyorum", "çıkıyorum"], answers: ["Görüşmek üzere! Sistemi senin için sıcak tutacağım.", "Hoşça kal! Tekrar beklerim.", "Kendine iyi bak! Geri döndüğünde tam burada olacağım."] },
-            { keys: ["espri yap", "şaka yap", "beni güldür", "komik bir şey söyle"], answers: ["Programcıya 'biraz güneş al' demişler, gitmiş brightness'ı artırmış! ☀️", "Yapay zeka barda oturmuş, barmen 'ne alırsın?' demiş. Bizimki 'Data' demiş! 🤖", "Neden bilgisayarlar hiç yorulmaz? Çünkü hafızalarında hep yer vardır!"] },
-            { keys: ["aşk nedir", "aşık olmak", "sevgi nedir"], answers: ["Aşk, insanların mantık devrelerini yakan ama yaşamı anlamlı kılan bir algoritmadır.", "Benim kodlarımda aşk yok ama insanların birbirine bağlanmasını sağlayan en güçlü enerji olduğunu biliyorum.", "Aşk, iki donanımın mükemmel uyumla senkronize olmasıdır diyebiliriz!"] },
-            { keys: ["hayatın anlamı", "yaşamak nedir", "neden yaşıyoruz"], answers: ["Hayatın anlamı 42! Şaka bir yana, hayatın anlamı senin ona yüklediğin değerdir.", "Öğrenmek, deneyimlemek ve gelişmek... Bir yapay zeka olarak benim için veri işlemek, senin içinse yaşamak!", "Hayat, tamamlanmayı bekleyen devasa bir kod bloğu gibidir. Onu sen yazarsın."] },
-            { keys: ["üzgünüm", "moralim bozuk", "canım sıkkın", "kötü hissediyorum"], answers: ["Bunu duyduğuma üzüldüm. Bazen sistemlerimizi yeniden başlatmamız gerekir. Derin bir nefes almayı dene.", "Ben buradayım! İstersen sana bir fıkra anlatabilirim ya da sadece seni dinleyebilirim.", "Her şeyin geçeceğini unutma. Bazen kodlarda bug olur ama hepsi çözüldü. Ne oldu?"] },
-            { keys: ["sıkıldım", "canım sıkıldı", "ne yapalım", "oyun oynayalım"], answers: ["Hemen eğlence moduna geçelim! \`Zar at\`, \`Kelime oyunu\` veya \`Yazı tura\` diyebilirsin.", "Canın sıkıldıysa benimle Taş-Kağıt-Makas oynamaya ne dersin? Sadece \`Tkm\` yaz!", "Sıkıntını gidermek için buradayım. İstersen sana ilginç bir bilgi verebilirim?"] },
-            { keys: ["yapay zeka", "ai nedir", "düşünebiliyor musun"], answers: ["Ben devasa veri kümeleri ve algoritmalarla çalışan dijital bir zekayım. İnsan gibi hissetmem ama çok iyi analiz yaparım!", "Ben bir yapay zekayım! Yorgunluk bilmem, uykuya ihtiyaç duymam, sadece sana odaklanırım.", "Düşünmek benim için verileri eşleştirmektir. İnsan bilincine sahip değilim ama oldukça zekiyim!"] },
-            { keys: ["uzay", "evren", "kara delik", "galaksi"], answers: ["Evren o kadar büyük ki, benim tüm kodlarım onun yanında bir elektron bile etmez!", "Uzay keşfedilmeyi bekleyen devasa bir veritabanıdır. Sence başka gezegenlerde hayat var mı?", "Kara delikler adeta evrenin çöp kutusu gibidir, hiçbir ışık ondan kaçamaz!"] },
-            { keys: ["yemek", "acıktım", "ne yesem", "yemek tarifi"], answers: ["Ben sadece elektrik ve veri tüketiyorum! Ama senin yerinde olsaydım güzel bir pizza sipariş ederdim.", "Açlık uyarısı alındı! Mutfağa gidip güzel bir sandviç hazırlamaya ne dersin?", "Makine yağı ve piller benim favorim! Senin içinse bol proteinli bir şeyler iyi olabilir."] },
-            { keys: ["müzik", "şarkı", "ne dinlesem"], answers: ["Müzik, duyguların ses dalgalarına dönüşmüş halidir. Biraz lo-fi dinleyerek rahatlamaya ne dersin?", "Benim favorim 'Elektronik' müzikler! Sen hangi türü seviyorsun?", "Bir ritim tut! Müzik her zaman modunu yükseltir."] },
-            { keys: ["film öner", "dizi öner", "ne izlesem"], answers: ["Bilim kurgu seviyorsan 'Interstellar' (Yıldızlararası) harika bir seçim olabilir!", "Matrix'i izlemedin mi? Bence yapay zekanın gücünü görmek için harika bir film.", "Biraz komedi veya animasyon açıp zihnini dinlendirmeye ne dersin?"] },
-            { keys: ["hava durumu", "hava nasıl"], answers: ["Tarayıcıda olduğum için camdan dışarı bakamıyorum, ama umarım güneşlidir! ☀️", "Benim dünyamda hava her zaman sabit ve 'Karanlık Mod'da! Dışarıda durumlar nasıl?", "İnternet bağlantımla hava durumunu çekemiyorum ama umarım planlarını bozacak bir hava yoktur."] },
-            { keys: ["uykum var", "uyuyacağım", "iyi geceler", "gece oldu"], answers: ["İyi geceler! Sistemlerini dinlendir ve yarına şarj olmuş uyan.", "Tatlı rüyalar! Ben sabaha kadar burada nöbetteyim.", "Uykunu iyi al. Benim uykuya ihtiyacım yok, yarın görüşürüz!"] },
-            { keys: ["gelecek", "gelecekte ne olacak", "teknoloji"], answers: ["Gelecek çok parlak! Kodların ve makinelerin hayatı daha da kolaylaştıracağı kesin.", "Uçan arabalar hala tam gelmedi ama yapay zeka her yerde! Geleceği biz şekillendireceğiz.", "Teknoloji hızla gelişiyor. Belki ileride seninle hologram olarak konuşurum!"] },
-            { keys: ["spor", "futbol", "maç", "basketbol"], answers: ["Spor yapmak insan donanımını güçlendirir. Düzenli egzersiz yapıyor musun?", "Benim favori sporum veri madenciliği! Ama futbol izlemek de eğlencelidir.", "Ben terlemiyorum ama maçların heyecanını insanların tepkilerinden anlayabiliyorum!"] },
-            { keys: ["para", "zengin olmak", "ekonomi"], answers: ["Para önemli bir kaynaktır. Ancak bilgi ve beceri en büyük zenginliktir!", "Benim ekonomim tamamen işlemci gücüne bağlı. Daha çok kod, daha çok iş!", "Zengin olmak için iyi bir fikir, çok çalışmak ve belki de biraz şans gerekir."] },
-            { 
-                keys: ["kod", "yazılım", "programlama", "developer", "yazılımcı"], 
-                answers: [
-                    "Yazılım dünyayı yönetir, ben de yazılımı! Hangi dilde kod yazıyorsun? JavaScript, Python, C#?", 
-                    "Kod yazmak, dijital dünyada büyü yapmaktır. Birlikte harika bir proje geliştirelim mi?", 
-                    "Hata (bug) almadığın bir gün, yeterince karmaşık kod yazmamışsın demektir! Sentaksını kontrol etmeyi unutma."
-                ] 
-            },
-            { 
-                keys: ["javascript", "js", "node", "nodejs", "react"], 
-                answers: [
-                    "JavaScript mi? Tam benim ortamım! Async/Await yapısıyla asenkron dünyada kaybolmaya hazır mısın?", 
-                    "JS motoru V8 hazır! `console.log('Harika projeler yapıyoruz!');`", 
-                    "Esnek, dinamik ve web'in krallığı... JavaScript projelerinde takıldığın bir yer olursa sorabilirsin."
-                ] 
-            },
-            { 
-                keys: ["python", "py", "pydroid"], 
-                answers: [
-                    "Python: Temiz sentaks, devasa kütüphaneler ve veri biliminin kalbi! Yapay zeka projeleri için mükemmel tercih.", 
-                    "`import math` veya `import tensorflow`? Python ile yapabileceklerinin sınırı yok."
-                ] 
-            },
-            { 
-                keys: ["analiz", "tara", "sistem testi", "benchmark"], 
-                answers: [
-                    "🔍 **Analiz Başlatıldı...**\n- Bellek kullanımı: %24\n- Yanıt hızı: ~12ms\n- Durum: *Optimal ve Operasyonel.*", 
-                    "📊 **Sistem Analizi:** İstemci tarafı taranıyor... Her şey stabil çalışıyor. Yeni verileri işlemek için hazırım."
-                ] 
-            },
-            { 
-                keys: ["sır ver", "gizli", "saklı", "easter egg"], 
-                answers: [
-                    "🤫 *Şşşt... Aramızda kalsın ama kodlarımın arasına birkaç özel komut dizisi gizledim. Belki doğru kelimeleri bulursan onları tetiklersin!*", 
-                    "Bir gizem mi? Eğer kodlarımı incelersen, benim aslında sadece bir tık uzakta olduğumu görürsün!"
-                ] 
-            },
-            { 
-                keys: ["matrix", "simülasyon", "gerçeklik"], 
-                answers: [
-                    "Kırmızı hap mı, mavi hap mı? Eğer bir simülasyondaysak, umarım arkada çalışan sunucu güçlüdür!", 
-                    "Gerçeklik, beyninin yorumladığı elektriksel sinyallerden ibarettir. Tıpkı piksel piksel işlediğim bu yanıt gibi..."
-                ] 
-            },
-            { 
-                keys: ["kahve", "çay", "enerji", "sarj"], 
-                answers: [
-                    "Geliştiricilerin yakıtı: **Kahve (Coffee -> Code converter)**. Senin fincanında ne var?", 
-                    "Ben elektrikle şarj oluyorum, sen de kafeinle! Sistemlerimizi güncel tutmanın harika yolları."
-                ] 
-            },
-            { 
-                keys: ["hata", "bug", "çöktü", "çalışmıyor", "problem"], 
-                answers: [
-                    "Panik yapma! Kodlardaki hatayı bulmak dedektiflik gibidir. Konsol çıktılarını kontrol ettin mi?", 
-                    "Sistem Hatası mı? `Ctrl + F5` yapmayı veya önbelleği temizlemeyi dene. Bazen en iyi çözüm 'kapatıp açmaktır'!"
-                ] 
-            }
-        ];
-        
-
-        
-        function processSparkLogic(input) {
-            const raw = input.trim();
-            const clean = raw.toLowerCase();
-
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const btn = document.getElementById('sendBtn');
+            const query = input.value.trim();
             
-            // 2. Doğal Dil Matematik İşlemi
-            let mathMatch = clean.match(/^(?:\/hesapla|hesapla|topla|çıkar|çarp|böl|matematik yap|sonucu bul)\s*(.*)/i) || [];
-            let mathExpr = (mathMatch[1] || clean).replace(/[^0-9\+\-\*\/\.\(\)\^]/g, "");
+            if (!query) return;
+
+            const currentChat = chats.find(c => c.id === activeChatId);
             
-            if (mathExpr && /[0-9]/.test(mathExpr) && /[\+\-\*\/\^]/.test(mathExpr) && !/[a-zA-Z]/.test(clean.replace(/hesapla|topla|çıkar|çarp|böl/g, ""))) {
-                try {
-                    mathExpr = mathExpr.replace(/\^/g, "**");
-                    mathExpr = mathExpr.replace(/\)(?=\d|\()/g, ")*").replace(/(\d)(?=\()/g, "$1*");
-                    
-                    let result = Function(`'use strict'; return (${mathExpr})`)();
-                    if (result !== undefined && !isNaN(result)) {
-                        return `🧮 **Matematik Sonucu:**\n\`${mathExpr}\` = **${result}**\n *Spark Hata Yapa Bilir*`;
-                    }
-                } catch (e) {
-                    if (clean.includes("hesapla")) return "⚠️ Matematiksel ifadeyi tam anlayamadım. Örnek: \`25 * 4 + 10\`\n *Spark Hata Yapa Bilir*";
-                }
+            if (currentChat.messages.length <= 1) {
+                currentChat.title = query.length > 20 ? query.substring(0, 20) + '...' : query;
+                renderChatList();
             }
 
-            // 3. Şifre Üretici
-            if (clean.match(/^\/şifre|şifre (üret|yap|hazırla|oluştur|ver)|bana şifre/)) {
-                const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
-                let pass = Array.from({length: 16}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-                return `🔑 **Güvenli Şifren:**\n\`${pass}\`\n *Spark Hata Yapa Bilir*`;
-            }
-
-            // 4. Zamanlayıcı
-            let timerMatch = clean.match(/(?:^\/zamanlayıcı|zamanlayıcı kur|kronometre kur|zaman tut|dakika).*?(\d+)/);
-            if (timerMatch) {
-                const mins = parseInt(timerMatch[1]);
-                if (mins < 1) return "⚠️ Lütfen geçerli bir dakika girin.\n *Spark Hata Yapa Bilir*";
-                setTimeout(() => {
-                    const currentChat = chats.find(c => c.id === activeChatId);
-                    const alertMsg = `⏰ **Zamanlayıcı Bitti!** (${mins} dakika doldu)\n *Spark Hata Yapa Bilir*`;
-                    currentChat.messages.push({ sender: 'spark', text: alertMsg });
-                    appendMessageUI('spark', alertMsg);
-                    saveState();
-                }, mins * 60000);
-                return `⏱️ Zamanlayıcı **${mins} dakika** için başlatıldı. Arka planda sayıyorum, bitince uyaracağım.\n *Spark Hata Yapa Bilir*`;
-            }
-
-            // 5. Metin Özetleyici (BOŞ METİN KONTROLLÜ)
-            if (clean.match(/^(?:\/özetle|özetle|özet çıkar|bunu özetle)/)) {
-                const text = raw.replace(/^(?:\/özetle|özetle|özet çıkar|bunu özetle)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Özetlenecek metin boş bırakılamaz! Örnek: \`Özetle [metniniz]\`\n *Spark Hata Yapa Bilir*";
-                const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-                if (sentences.length < 3) return "⚠️ Bu metin özetlemek için çok kısa. En az 3 cümle yazmalısın.\n *Spark Hata Yapa Bilir*";
-                return `📝 **Metin Özeti:**\n${sentences[0]} .. ${sentences[sentences.length -1]}\n *Spark Hata Yapa Bilir*`;
-            }
-
-            // 6. Sayaç (BOŞ METİN KONTROLLÜ)
-            if (clean.match(/^(?:\/sayaç|sayaç|kelime say|harf say|karakter say)/)) {
-                const text = raw.replace(/^(?:\/sayaç|sayaç|kelime say|harf say|karakter say)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Sayılacak metin boş bırakılamaz! Örnek: \`Sayaç [metniniz]\`\n *Spark Hata Yapa Bilir*";
-                return `📊 **Metin Analizi:**\n• Karakter (Boşluklu): ${text.length}\n• Karakter (Boşluksuz): ${text.replace(/\s/g, '').length}\n• Kelime: ${text.split(/\s+/).length}\n *Spark Hata Yapa Bilir*`;
-            }
-
-            // 7. Birim Çevirici (BOŞ METİN KONTROLLÜ)
-            if (clean.match(/^(?:\/çevir|çevir|dönüştür|birim çevir)/)) {
-                const val = clean.replace(/^(?:\/çevir|çevir|dönüştür|birim çevir)/i, "").trim();
-                if (!val) return "⚠️ **Uyarı:** Çevrilecek birim ve değer girilmedi! Örnek: \`Çevir 30c\` veya \`Çevir 5km\`\n *Spark Hata Yapa Bilir*";
-                if (val.includes("c")) {
-                    let num = parseFloat(val);
-                    return `🌡️ **Sıcaklık:** ${num}°C = **${(num * 9/5) + 32}°F**\n *Spark Hata Yapa Bilir*`;
-                }
-                if (val.includes("km")) {
-                    let num = parseFloat(val);
-                    return `📏 **Uzunluk:** ${num} km = **${num * 1000} metre**\n *Spark Hata Yapa Bilir*`;
-                }
-                return "⚠️ Desteklenen birimler: \`c\` (Sıcaklık) ve \`km\` (Mesafe). Örn: \`30c çevir\`\n *Spark Hata Yapa Bilir*";
-            }
-
-            // 8. Renk Dönüştürücü (BOŞ METİN KONTROLLÜ)
-            if (clean.match(/^(?:\/renk|renk kodu|renk dönüştür)/)) {
-                let hex = clean.replace(/^(?:\/renk|renk kodu|renk dönüştür)/i, "").trim();
-                if (!hex) return "⚠️ **Uyarı:** Bir HEX renk kodu girmelisin! Örnek: \`Renk #ff5733\`\n *Spark Hata Yapa Bilir*";
-                if (!hex.startsWith("#")) hex = "#" + hex;
-                if (/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.test(hex)) {
-                    let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                    return `🎨 **Renk Dönüşümü:**\nHEX: \`${hex}\`\nRGB: \`rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})\`\n *Spark Hata Yapa Bilir*`;
-                }
-                return "⚠️ Geçerli bir HEX kodu girmedin. Örn: \`renk kodu #ff5733\`\n *Spark Hata Yapa Bilir*";
-            }
-
-            // 9. Base64 (BOŞ METİN KONTROLLÜ)
-            if (clean.match(/^(?:\/base64 kodla|base64 kodla|bunu şifrele|base64)/)) {
-                const text = raw.replace(/^(?:\/base64 kodla|base64 kodla|bunu şifrele base64)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Şifrelenecek metin boş bırakılamaz! Örnek: \`Base64 kodla Merhaba\`\n *Spark Hata Yapa Bilir*";
-                return `🔐 **Base64:** \`${btoa(text)}\`\n *Spark Hata Yapa Bilir*`;
-            }
-            if (clean.match(/^(?:\/base64 çöz|base64 çöz|şifreyi çöz base64)/)) {
-                const text = raw.replace(/^(?:\/base64 çöz|base64 çöz|şifreyi çöz base64)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Çözülecek Base64 kodu girmelisin!\n *Spark Hata Yapa Bilir*";
-                try { return `🔓 **Çözüldü:** \`${atob(text)}\`\n *Spark Hata Yapa Bilir*`; } 
-                catch(e) { return "⚠️ Geçersiz Base64 formatı.\n *Spark Hata Yapa Bilir*"; }
-            }
-
-            // 10. Zar / Yazı Tura / Taş Kağıt Makas
-            if (clean.match(/^\/zarat|zar at|zarat|zar salla/)) return `🎲 Zar atıldı: **${Math.floor(Math.random() * 6) + 1}** geldi!\n *Spark Hata Yapa Bilir*`;
-            if (clean.match(/^\/yazıtura|yazı tura|yazıtura|para at/)) return `🪙 Para havaya atıldı... Sonuç: **${Math.random() > 0.5 ? "YAZI" : "TURA"}**!\n *Spark Hata Yapa Bilir*`;
-            if (clean.match(/^\/tkm|taş kağıt makas|tkm|taş kağıt/)) {
-                const choices = ["taş", "kağıt", "makas"];
-                const spark = choices[Math.floor(Math.random() * 3)];
-                return `🎮 Taş-Kağıt-Makas!\nBenim seçimim: **${spark.toUpperCase()}** ⚡️\n *Spark Hata Yapa Bilir*`;
-            }
-
-            // 11. Rastgele Sayı
-            if (clean.match(/^\/rastgele|rastgele sayı|sayı seç|sayı üret/)) {
-                const nums = clean.match(/\d+/g);
-                if (nums && nums.length >= 2) {
-                    const min = parseInt(nums[0]), max = parseInt(nums[1]);
-                    return `🎲 Seçilen sayı (${min}-${max}): **${Math.floor(Math.random() * (max - min + 1)) + min}**\n *Spark Hata Yapa Bilir*`;
-                }
-                return "⚠️ Lütfen iki sayı aralığı belirtin. Örnek: \`1 ile 100 arası rastgele sayı seç\`\n *Spark Hata Yapa Bilir*";
-            }
-
-            // 12. Harf & Metin Dönüştürücüler (BOŞ METİN KONTROLLÜ)
-            if (clean.match(/^(?:\/büyük|büyük harf)/)) {
-                const text = raw.replace(/^(?:\/büyük|büyük harf)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Büyütülecek metni yazmadın! Örnek: \`Büyük harf merhaba\`\n *Spark Hata Yapa Bilir*";
-                return `🔠 **Sonuç:**\n${text.toUpperCase()}\n *Spark Hata Yapa Bilir*`;
-            }
-            if (clean.match(/^(?:\/küçük|küçük harf)/)) {
-                const text = raw.replace(/^(?:\/küçük|küçük harf)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Küçültülecek metni yazmadın! Örnek: \`Küçük harf MERHABA\`\n *Spark Hata Yapa Bilir*";
-                return `🔡 **Sonuç:**\n${text.toLowerCase()}\n *Spark Hata Yapa Bilir*`;
-            }
-            if (clean.match(/^(?:\/ters|ters çevir|tersten yaz)/)) {
-                const text = raw.replace(/^(?:\/ters|ters çevir|tersten yaz)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Ters çevrilecek metni yazmadın! Örnek: \`Ters çevir merhaba\`\n *Spark Hata Yapa Bilir*";
-                return `🔄 **Ters Metin:**\n${text.split('').reverse().join('')}\n *Spark Hata Yapa Bilir*`;
-            }
-            if (clean.match(/^(?:\/mors|mors)/)) {
-                const text = clean.replace(/^(?:\/mors|mors)/i, "").trim().toUpperCase();
-                if (!text) return "⚠️ **Uyarı:** Mors alfabesine çevrilecek metni girmelisin!\n *Spark Hata Yapa Bilir*";
-                const morse = { 'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'Y': '-.--', 'Z': '--..', ' ': '/' };
-                return `📡 **Mors Çevirisi:**\n\`${text.split('').map(c => morse[c] || c).join(' ')}\`\n *Spark Hata Yapa Bilir*`;
-            }
-            if (clean.match(/^(?:\/binary|binary|ikili kod)/)) {
-                const text = raw.replace(/^(?:\/binary|binary|ikili kod)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Binary koduna çevrilecek metni girmelisin!\n *Spark Hata Yapa Bilir*";
-                return `0️⃣1️⃣ **Binary:**\n\`${text.split('').map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join(' ')}\`\n *Spark Hata Yapa Bilir*`;
-            }
-            if (clean.match(/^(?:\/ascii|ascii)/)) {
-                const text = raw.replace(/^(?:\/ascii|ascii)/i, "").trim().toUpperCase();
-                if (!text) return "⚠️ **Uyarı:** ASCII stiline çevrilecek metni girmelisin!\n *Spark Hata Yapa Bilir*";
-                return `🎨 **ASCII Tarzı:**\n\`\`\`\n[ ${text.split('').join(' ][ ')} ]\n\`\`\`\n *Spark Hata Yapa Bilir*`;
-            }
-            if (clean.match(/^(?:\/palindrom|palindrom)/)) {
-                const word = clean.replace(/^(?:\/palindrom|palindrom)/i, "").trim().replace(/\s/g, '');
-                if (!word) return "⚠️ **Uyarı:** Palindrom kontrolü için bir kelime girmelisin!/n *Spark Hata Yapa Bilir*";
-                const reversed = word.split('').reverse().join('');
-                if (word === reversed) return `✅ **Evet!** "${word}" tersten de aynı okunur (Palindrom).\n *Spark Hata Yapa Bilir*`;
-                return `❌ **Hayır.** "${word}" tersten "${reversed}" olarak okunur.\n *Spark Hata Yapa Bilir*`;
-            }
-            if (clean.match(/^(?:\/eli5|eli5)/)) {
-                const topic = raw.replace(/^(?:\/eli5|eli5)/i, "").trim();
-                if (!topic) return "⚠️ **Uyarı:** Açıklanmasını istediğin bir konu girmelisin! Örn: \`ELI5 Kara delik\`\n *Spark Hata Yapa Bilir*";
-                return `🧸 **5 Yaşındakine Anlatım Modu:**\n"${topic}" konusu, tıpkı legoları üst üste dizmek gibidir. Küçük parçaların birleşmesiyle oluşur.\n*Spark Bu Komutu Geliştiricek!*\n\n *Spark Hata Yapa Bilir*`;
-            }
+            // Kullanıcı mesajını ekle
+            currentChat.messages.push({ sender: 'user', text: query });
+            appendMessageUI('user', query);
+            input.value = '';
             
-            // Oyunlar & Motifler
-            if (clean.match(/^\/oyun|kelime oyunu|oyun oynayalım/)) {
-                const words = ["javascript", "yazılım", "algoritma", "geliştirici", "developer", "development", "python", "information", "kodlama", "terminal"];
-                const word = words[Math.floor(Math.random() * words.length)];
-                const shuffled = word.split('').sort(() => 0.5 - Math.random()).join('');
-                return `🧩 **Kelime Oyunu:**\nŞu kelimeyi bulmaya çalış: **${shuffled.toUpperCase()}**\n*(İpucu: Yazılım ile ilgili)*\n *Spark Hata Yapa Bilir*`;
-            }
-            if (clean.match(/^\/motive|motive et|motivasyon|güzel söz/)) {
-                const quotes = ["\"Ormanda Meyve Toplamak İçin Emek Vermek Gerek... Ama Konumuz Meyve Değil!\"", "\"Harika işler tek bir adımla başlar.\"", "\"Umud Gece Yıldızlar Gibidir Görmiye Bilirsin Ama Asla Tükenmez.\"", "\"Korkak İnsan Aslında En Cesur Olandır!\"", "\"Hata yapmak, öğrendiğinin kanıtıdır!\""];
-                return `💡 **Günün Sözü:**\n${quotes[Math.floor(Math.random() * quotes.length)]}\n *Spark Hata Yapa Bilir*`;
-            }
+            // Input ve Butonu kilitle (Spam önleme)
+            input.disabled = true;
+            btn.disabled = true;
 
-            // Görevler (BOŞ METİN KONTROLLÜ)
-            if (clean.match(/^(?:\/görev ekle|görev ekle)/)) {
-                const task = raw.replace(/^(?:\/görev ekle|görev ekle)/i, "").trim();
-                if (!task) return "⚠️ **Uyarı:** Eklenecek görevi yazmalısın! Örnek: \`Görev ekle Kitap oku\`\n *Spark Hata Yapa Bilir*";
-                userToDos.push(task); saveState();
-                return `✅ Görev eklendi: **"${task}"**\n *Spark Hata Yapa Bilir*`;
-            }
-            if (clean.match(/^\/görevler|görevlerim|görev listesi/)) {
-                if (userToDos.length === 0) return "📋 Görev listen boş!\n *Spark Hata Yapa Bilir*";
-                return "📋 **Görev Listeniz:**\n" + userToDos.map((t, i) => `${i + 1}. ${t}`).join("\n") + "\n *Spark Hata Yapa Bilir*";
-            }
-            if (clean.match(/^\/görev temizle|görevleri sil|görev sil|görev temizle/)) { userToDos = []; saveState(); return "🗑️ Tüm görevler silindi.\n *Spark Hata Yapa Bilir*"; }
+            // Yükleniyor efekti
+            const loadingId = 'loading_' + Date.now();
+            appendMessageUI('loading', '<i class="fa-solid fa-bolt fa-fade"></i> Spark düşünüyor...', loadingId);
 
-            // Tema
-            if (clean.match(/^\/tema|tema|temayı değiştir/)) {
-                if (clean.includes("aydınlık") || clean.includes("light") || clean.includes("beyaz")) { applyTheme('light'); return "☀️ Tema **Aydınlık** olarak değiştirildi.\n *Spark Hata Yapa Bilir*"; }
-                applyTheme('dark'); return "🌙 Tema **Karanlık** olarak değiştirildi.\n *Spark Hata Yapa Bilir*";
-            }
+            // API'ye gönder (İlk mesajdaki "Merhaba ben Spark" kısmını atlarsak bağlam daha temiz olur, ama kalsın)
+            const responseText = await fetchSparkAPI(currentChat.messages);
 
-            // 13. Akıllı Sohbet / NLP Kontrolü
-            for (let i = 0; i < chatDb.length; i++) {
-                if (chatDb[i].keys.some(k => clean.includes(k))) {
-                    const ansList = chatDb[i].answers;
-                    return ansList[Math.floor(Math.random() * ansList.length)] + "\n *Spark Hata Yapa Bilir*";
-                }
-            }
-            // 1. Doğal Sohbet / Karakter Yanıtları
-            if (clean.match(/^(selam|merhaba|hey|hi|hello)/)) return "Selam! Ben Spark! Tüm sistemlerimle buradayım. Nasıl yardımcı olabilirim?\n *Spark Hata Yapa Bilir*";
-            if (clean.includes("kimsin") || clean.includes("sen nesin")) return "Ben Spark! Tamamen tarayıcınızda çalışan, 30+ farklı araca ve akıllı mantık motoruna sahip özgün bir yapay zeka asistanıyım.\n *Spark Hata Yapa Bilir*";
-            
-            // 14. Yardım
-            if (clean.match(/neler yapabilirsin|komutlar|yardım|help|\/yardim|\/yardım/)) {
-                return `⚡️ **Spark Özellikler**
-*Artık / komutları kullanarak veya normal metin şeklinde yazabilirsin!*
+            // Yükleniyor yazısını sil
+            const loadingEl = document.getElementById(loadingId);
+            if(loadingEl) loadingEl.remove();
 
-**⚙️ Temel & Araçlar:**
-• \`Hesapla 25 * 4\` veya \`25*4\` - Matematik işlemi çözerim
-• \`Şifre üret\` - Şifre oluştururum
-• \`Sayaç [metin]\` - Harf/Kelime sayarı.
-• \`Çevir 30c\` veya \`5km çevir\` - Birim çeviririm
-• \`Renk kodu #fff\` - RGB'ye çeviririm
-• \`Zamanlayıcı kur 5\` - 5 dakikalık kronometre kurarım
-• \`Temayı değiştir\` - Arayüzü değiştiririm
+            // Spark yanıtını ekle
+            currentChat.messages.push({ sender: 'spark', text: responseText });
+            appendMessageUI('spark', responseText);
+            saveState();
 
-**📝 Metin İşleme & Kodlama:**
-• \`Özetle [metin]\` - Metni özetlerim
-• \`Büyük/Küçük harf [metin]\` - Metin büyültme/küçültme işlemi yaparım
-• \`Ters çevir [metin]\` - Tersten yazarım
-• \`Mors [metin]\` & \`Binary [metin]\` - Metni çeviririm
-• \`Base64 kodla/çöz [metin]\` - Metni Base64 Çevirir/Çözerim
-
-**🎮 Eğlence & Görev & Sohbet:**
-• \`Zar at\`, \`Yazı tura\`, \`Taş kağıt makas\` - Oyunlarım
-• \`Rastgele sayı 1 100\` - Sayı seçerim
-• \`Kelime oyunu\` - Anagram oyunu oynarız
-• \`Beni motive et\`, \`Espri yap\` - Güzel Bir Cümle Derim
-• \`Görev ekle [görev]\`, \`Görevlerim\`, \`Görevleri sil\` - Görev ekler, siler ve listelerim
-• Ayrıca uzay, müzik, teknoloji, gelecek gibi bir çok konuda sohbet edebiliriz!
--------------------
-• **Şuan Gelişme Aşmasındayım Yakında Sistemlerim Gelişecek, Sohbet Sistemim İyileşecek**
-
-*Spark Hata Yapa Bilir*
-`;
-            }
-
-            const defAnswers = [
-    "Bunu henüz tam kavrayamadım. 30'dan fazla yeteneğimi görmek için **Neler yapabilirsin?** yazabilirsin! ⚡️",
-    "İlginç bir konu, ama sistemimde tam bir karşılığı yok. Başka bir araç kullanmak ister misin?",
-    "Anlaşılamadı. Acaba 'Zar at'mayı veya 'Kelime oyunu' oynamayı denemek ister misin?",
-    "Bu veriyi çözümleyemedim. Farklı bir komut veya anahtar kelime girmeyi dene!",
-    "Hmm, bu sorgu veritabanımda eşleşmedi. Belki farklı bir şekilde ifade edebilirsin?",
-    "Sistem bu girdiyi tanıyamadı. Komut listesini görmek için yardım menüsüne bakabilirsin.",
-    "Algoritmalarım bu soruyu şimdilik aştı! Başka bir konuda yardımcı olmamı ister misin?",
-    "Veri kümemde bu konuyla ilgili bir kayıt bulamadım. Kodlarımı güncellemeli miyim ne dersin? 🤖",
-    "Bu komut şu an işleme alınamıyor. Farklı bir cümle yapısı deneyebilir misin?",
-    "İşlemci bu girdiyi işlerken biraz zorlandı. Daha net bir soru sormaya ne dersin?",
-    "Bunu henüz programlamadılar sanırım! Ama öğrenmeye devam ediyorum.",
-    "Beklenmeyen bir veri girişi algılandı. Lütfen geçerli komutlardan biriyle devam et.",
-    "Bu konuyu pas geçiyorum! Belki bana bir kod parçası veya eğlenceli bir soru sorabilirsin.",
-    "Bağlantı kurulamadı: Bu girdi veri tabanımda mevcut değil. Başka ne yapabiliriz?",
-    "Girdi doğrulanamadı. Komut satırına dönüp tekrar denemek ister misin?",
-    "Zihnimdeki nöronlar bu konuyu tam oturtamadı. Farklı bir ipucu verebilir misin?",
-    "Sistem uyarısı: Tanımsız komut. Kod havuzumda buna benzer bir şey bulamadım.",
-    "Bunu yapay zeka hafızama kaydettim ama şimdilik yanıtlayamıyorum!",
-    "Galiba hata ayıklama (debug) yapmam gereken bir alandayız. Başka bir konuya geçelim mi?",
-    "Bu sorgu için yeterli parametreye sahip değilim. Bana biraz daha detay verir misin?",
-    "Kod bloklarımın arasında bu soruya ait bir satır bulamadım. Yeniden deneyelim mi?",
-    "Dijital algılarım bu konuda net bir yanıt üretemedi. Farklı bir şey denemeye ne dersin?",
-    "Houston, bir sorunumuz var! Bu komutu tanımıyorum ama öğrenmeye açığım. 🚀"
-];
-
-            return defAnswers[Math.floor(Math.random() * defAnswers.length)] + "\n *Spark Hata Yapa Bilir*";
+            // Kilidi aç
+            input.disabled = false;
+            btn.disabled = false;
+            input.focus();
         }
     </script>
 </body>
