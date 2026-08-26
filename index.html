@@ -507,8 +507,8 @@
             // 5. Metin Özetleyici (BOŞ METİN KONTROLLÜ)
             if (clean.match(/^(?:\/özetle|özetle|özet çıkar|bunu özetle)/)) {
                 const text = raw.replace(/^(?:\/özetle|özetle|özet çıkar|bunu özetle)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Özetlenecek metin boş bırakılamaz! Örnek: \`Özetle [metniniz]\`";
-                const sentences = text.split(/(?<=[.!?])\s+/);
+                if (!text) return "⚠️ **Uyarı:** Özetlenecek metin boş bırakılamaz! Örnek: \`Özetle [metniniz]\`/n *Spark Hata Yapa Bilir*";
+                const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
                 if (sentences.length < 3) return "⚠️ Bu metin özetlemek için çok kısa. En az 3 cümle yazmalısın./n *Spark Hata Yapa Bilir*";
                 return `📝 **Metin Özeti:**\n${sentences[0]} .. ${sentences[sentences.length -1]}/n *Spark Hata Yapa Bilir*`;
             }
