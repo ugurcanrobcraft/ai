@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Spark AI</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -33,9 +33,41 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text); display: flex; height: 100vh; overflow: hidden; transition: background-color 0.3s; }
+        
+        /* 100dvh mobil cihazlarda tarayıcı çubuğu sorununu çözer */
+        html, body { 
+            background-color: var(--bg-dark); 
+            color: var(--text); 
+            display: flex; 
+            height: 100dvh; 
+            width: 100%;
+            overflow: hidden; 
+            transition: background-color 0.3s; 
+        }
 
-        .sidebar { width: 280px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 15px; transition: 0.3s; z-index: 10; }
+        /* YENİ: Mobil için Arka Plan Karartması (Overlay) */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 998;
+            backdrop-filter: blur(2px);
+        }
+        .sidebar-overlay.active { display: block; }
+
+        .sidebar { 
+            width: 280px; 
+            background-color: var(--bg-sidebar); 
+            border-right: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            padding: 15px; 
+            transition: 0.3s ease; 
+            z-index: 999; 
+            height: 100dvh;
+        }
+        
         .brand { display: flex; align-items: center; gap: 10px; font-size: 1.4rem; font-weight: bold; color: var(--accent); margin-bottom: 20px; }
         .btn-new-chat { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn-new-chat:hover { background: var(--accent-hover); }
@@ -48,12 +80,20 @@
         .chat-item .edit-btn, .chat-item .delete-btn { opacity: 0.6; cursor: pointer; font-size: 0.85rem; }
         .chat-item .edit-btn:hover, .chat-item .delete-btn:hover { opacity: 1; color: #ef4444; }
 
-        .main-chat { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-dark); transition: background-color 0.3s; min-width: 0; }
+        .main-chat { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-dark); transition: background-color 0.3s; min-width: 0; height: 100dvh; }
+        
         .chat-header { padding: 15px 20px; background: var(--bg-sidebar); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        
+        /* YENİ: Hamburger Menü Butonu */
+        .hamburger-btn { display: none; font-size: 1.4rem; cursor: pointer; color: var(--text); margin-right: 15px; }
+        .header-left { display: flex; align-items: center; }
+        
         .header-actions { display: flex; gap: 10px; align-items: center; }
         .status-badge { background: #10b981; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; }
 
-        .messages-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+        /* DÜZELTME: flex: 1 1 0; ile taşmaları engelledik */
+        .messages-container { flex: 1 1 0; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+        
         .message { max-width: 85%; padding: 12px 16px; border-radius: 12px; line-height: 1.5; font-size: 0.95rem; word-break: break-word; white-space: pre-wrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .message.user { align-self: flex-end; background-color: var(--user-msg); color: white; border-bottom-right-radius: 2px; }
         .message.spark { align-self: flex-start; background-color: var(--bot-msg); color: var(--text); border-bottom-left-radius: 2px; border-left: 3px solid var(--accent); }
@@ -66,27 +106,44 @@
         .input-area { padding: 15px 20px; background: var(--bg-sidebar); border-top: 1px solid var(--border); display: flex; gap: 10px; }
         .input-area input { flex: 1; background: var(--bg-card); border: 1px solid var(--border); color: var(--text); padding: 12px 15px; border-radius: 8px; outline: none; font-size: 0.95rem; transition: 0.2s; }
         .input-area input:focus { border-color: var(--accent); }
-        .input-area button { background: var(--accent); color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 1.1rem; }
+        .input-area button { background: var(--accent); color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 1.1rem; flex-shrink: 0; }
         .input-area button:hover { background: var(--accent-hover); }
 
-        .feature-chips { display: flex; gap: 8px; overflow-x: auto; padding: 10px 20px 0; background: var(--bg-dark); }
+        .feature-chips { display: flex; gap: 8px; overflow-x: auto; padding: 10px 20px 0; background: var(--bg-dark); flex-shrink: 0; }
         .chip { background: var(--bg-card); border: 1px solid var(--border); font-size: 0.75rem; padding: 6px 12px; border-radius: 15px; cursor: pointer; white-space: nowrap; transition: 0.2s; }
         .chip:hover { border-color: var(--accent); background: var(--accent); color: white; }
         .feature-chips::-webkit-scrollbar { height: 4px; }
         .feature-chips::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
+        /* YENİ: Mobil ve Tablet Uyumluluğu */
         @media (max-width: 768px) {
-            body { flex-direction: column-reverse; }
-            .sidebar { width: 100%; height: 140px; padding: 10px; }
-            .chat-list { flex-direction: row; gap: 6px; overflow-x: auto; margin-top: 8px; }
-            .chat-item { min-width: 130px; flex-direction: column; align-items: flex-start; }
-            .main-chat { height: calc(100vh - 140px); }
+            .hamburger-btn { display: block; }
+            
+            /* Sidebar'ı ekranın soluna gizle */
+            .sidebar { 
+                position: fixed; 
+                left: -320px; 
+                top: 0; 
+                height: 100dvh; 
+                width: 280px; 
+                box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+            }
+            
+            /* Sidebar açıldığında çalışacak class */
+            .sidebar.open { left: 0; }
+            
+            .input-area { padding: 12px 15px; }
+            .chat-header { padding: 12px 15px; }
+            .messages-container { padding: 15px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
+    <!-- YENİ: Arka Plan Karartması -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <div class="sidebar" id="sidebar">
         <div class="brand">
             <i class="fa-solid fa-bolt"></i>
             <span>Spark</span>
@@ -99,9 +156,13 @@
 
     <div class="main-chat">
         <div class="chat-header">
-            <div>
-                <strong id="activeChatTitle">Yeni Sohbet</strong>
-                <p style="font-size: 0.75rem; color: var(--text-muted);">Lokal Özgün Motor | 30+ Sistem Tamamen Aktif</p>
+            <div class="header-left">
+                <!-- YENİ: Hamburger Menü İkonu -->
+                <i class="fa-solid fa-bars hamburger-btn" onclick="toggleSidebar()"></i>
+                <div>
+                    <strong id="activeChatTitle">Yeni Sohbet</strong>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Lokal Özgün Motor | 30+ Sistem Aktif</p>
+                </div>
             </div>
             <div class="header-actions">
                 <span class="status-badge">Çevrimiçi</span>
@@ -115,7 +176,7 @@
             <div class="chip" onclick="sendQuickCommand('Zar at')">🎲 Zar</div>
             <div class="chip" onclick="sendQuickCommand('Çevir 30c')">🌡️ Çevirici</div>
             <div class="chip" onclick="sendQuickCommand('Renk kodu #ff5733')">🎨 Renk Kodu</div>
-            <div class="chip" onclick="sendQuickCommand('Temayı değiştir')">🌓 Tema</div>
+            <div class="chip" onclick="sendQuickCommand('Yazı tura at')">🪙 Yazı - Tura</div>
             <div class="chip" onclick="sendQuickCommand('Zamanlayıcı kur 1')">⏱️ Zamanlayıcı</div>
         </div>
 
@@ -145,6 +206,14 @@
             }
         };
 
+        // YENİ: Sidebar Toggle Fonksiyonu
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
         function saveState() {
             localStorage.setItem('spark_chats', JSON.stringify(chats));
             localStorage.setItem('spark_active_chat', activeChatId);
@@ -163,6 +232,9 @@
             saveState();
             renderChatList();
             loadMessages();
+            
+            // Mobilde yeni sohbet açınca menüyü kapat
+            if(window.innerWidth <= 768) { toggleSidebar(); }
         }
 
         function renderChatList() {
@@ -195,7 +267,21 @@
             }
         }
 
-        function switchChat(id) { activeChatId = id; saveState(); renderChatList(); loadMessages(); }
+        function switchChat(id) { 
+            activeChatId = id; 
+            saveState(); 
+            renderChatList(); 
+            loadMessages(); 
+            
+            // Mobilde sohbet değiştirince menüyü otomatik kapat
+            if(window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                if(sidebar.classList.contains('open')) {
+                    toggleSidebar();
+                }
+            }
+        }
+
         function deleteChat(id) {
             chats = chats.filter(c => c.id !== id);
             if (chats.length === 0) createNewChat();
@@ -290,7 +376,6 @@
             saveState();
         }
 
-        // 50 Farklı Sohbet Konusu & 3'er Varyasyon (Gemini/OpenAI Deneyimi)
         const chatDb = [
             { keys: ["nasılsın", "naber", "durumlar nasıl", "ne haber", "nasıl gidiyor"], answers: ["Harikayım, sistemlerim tıkır tıkır çalışıyor! Sen nasılsın?", "Çok iyiyim! Senin için buraları düzenliyorum, sende ne var ne yok?", "Enerjim %100! Bir şeyler üretmek için sabırsızlanıyorum, sen nasılsın?"] },
             { keys: ["versiyon", "sürümün nedir", "versiyonun nedir", "hangi sürüm"], answers: ["Benim mevcut sürümüm: **Spark v2.3**. Senin için özel güncellendim!", "Şu an **v2.3** sürümünde çalışıyorum. Daha akıllı, daha hızlıyım!", "**Spark v2.3** güncellemesiyle buradayım, yenilikleri denemek ister misin?"] },
@@ -301,7 +386,7 @@
             { keys: ["aşk nedir", "aşık olmak", "sevgi nedir"], answers: ["Aşk, insanların mantık devrelerini yakan ama yaşamı anlamlı kılan bir algoritmadır.", "Benim kodlarımda aşk yok ama insanların birbirine bağlanmasını sağlayan en güçlü enerji olduğunu biliyorum.", "Aşk, iki donanımın mükemmel uyumla senkronize olmasıdır diyebiliriz!"] },
             { keys: ["hayatın anlamı", "yaşamak nedir", "neden yaşıyoruz"], answers: ["Hayatın anlamı 42! Şaka bir yana, hayatın anlamı senin ona yüklediğin değerdir.", "Öğrenmek, deneyimlemek ve gelişmek... Bir yapay zeka olarak benim için veri işlemek, senin içinse yaşamak!", "Hayat, tamamlanmayı bekleyen devasa bir kod bloğu gibidir. Onu sen yazarsın."] },
             { keys: ["üzgünüm", "moralim bozuk", "canım sıkkın", "kötü hissediyorum"], answers: ["Bunu duyduğuma üzüldüm. Bazen sistemlerimizi yeniden başlatmamız gerekir. Derin bir nefes almayı dene.", "Ben buradayım! İstersen sana bir fıkra anlatabilirim ya da sadece seni dinleyebilirim.", "Her şeyin geçeceğini unutma. Bazen kodlarda bug olur ama hepsi çözülür. Ne oldu?"] },
-            { keys: ["sıkıldım", "canım sıkıldı", "ne yapalım", "oyun oynayalım"], answers: ["Hemen eğlence moduna geçelim! `Zar at`, `Kelime oyunu` veya `Yazı tura` diyebilirsin.", "Canın sıkıldıysa benimle Taş-Kağıt-Makas oynamaya ne dersin? Sadece `Tkm` yaz!", "Sıkıntını gidermek için buradayım. İstersen sana ilginç bir bilgi verebilirim?"] },
+            { keys: ["sıkıldım", "canım sıkıldı", "ne yapalım", "oyun oynayalım"], answers: ["Hemen eğlence moduna geçelim! \`Zar at\`, \`Kelime oyunu\` veya \`Yazı tura\` diyebilirsin.", "Canın sıkıldıysa benimle Taş-Kağıt-Makas oynamaya ne dersin? Sadece \`Tkm\` yaz!", "Sıkıntını gidermek için buradayım. İstersen sana ilginç bir bilgi verebilirim?"] },
             { keys: ["yapay zeka", "ai nedir", "düşünebiliyor musun"], answers: ["Ben devasa veri kümeleri ve algoritmalarla çalışan dijital bir zekayım. İnsan gibi hissetmem ama çok iyi analiz yaparım!", "Ben bir yapay zekayım! Yorgunluk bilmem, uykuya ihtiyaç duymam, sadece sana odaklanırım.", "Düşünmek benim için verileri eşleştirmektir. İnsan bilincine sahip değilim ama oldukça zekiyim!"] },
             { keys: ["uzay", "evren", "kara delik", "galaksi"], answers: ["Evren o kadar büyük ki, benim tüm kodlarım onun yanında bir elektron bile etmez!", "Uzay keşfedilmeyi bekleyen devasa bir veritabanıdır. Sence başka gezegenlerde hayat var mı?", "Kara delikler adeta evrenin çöp kutusu gibidir, hiçbir ışık ondan kaçamaz!"] },
             { keys: ["yemek", "acıktım", "ne yesem", "yemek tarifi"], answers: ["Ben sadece elektrik ve veri tüketiyorum! Ama senin yerinde olsaydım güzel bir pizza sipariş ederdim.", "Açlık uyarısı alındı! Mutfağa gidip güzel bir sandviç hazırlamaya ne dersin?", "Makine yağı ve piller benim favorim! Senin içinse bol proteinli bir şeyler iyi olabilir."] },
@@ -334,7 +419,7 @@
                         return `🧮 **Matematik Sonucu:**\n\`${mathExpr}\` = **${result}**`;
                     }
                 } catch (e) {
-                    if (clean.includes("hesapla")) return "⚠️ Matematiksel ifadeyi tam anlayamadım. Örnek: `25 * 4 + 10`";
+                    if (clean.includes("hesapla")) return "⚠️ Matematiksel ifadeyi tam anlayamadım. Örnek: \`25 * 4 + 10\`";
                 }
             }
 
@@ -363,7 +448,7 @@
             // 5. Metin Özetleyici (BOŞ METİN KONTROLLÜ)
             if (clean.match(/^(?:\/özetle|özetle|özet çıkar|bunu özetle)/)) {
                 const text = raw.replace(/^(?:\/özetle|özetle|özet çıkar|bunu özetle)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Özetlenecek metin boş bırakılamaz! Örnek: `Özetle [metniniz]`";
+                if (!text) return "⚠️ **Uyarı:** Özetlenecek metin boş bırakılamaz! Örnek: \`Özetle [metniniz]\`";
                 const sentences = text.split(/(?<=[.!?])\s+/);
                 if (sentences.length < 3) return "⚠️ Bu metin özetlemek için çok kısa. En az 3 cümle yazmalısın.";
                 return `📝 **Metin Özeti:**\n${sentences[0]} .. ${sentences[sentences.length -1]}`;
@@ -372,14 +457,14 @@
             // 6. Sayaç (BOŞ METİN KONTROLLÜ)
             if (clean.match(/^(?:\/sayaç|sayaç|kelime say|harf say|karakter say)/)) {
                 const text = raw.replace(/^(?:\/sayaç|sayaç|kelime say|harf say|karakter say)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Sayılacak metin boş bırakılamaz! Örnek: `Sayaç [metniniz]`";
+                if (!text) return "⚠️ **Uyarı:** Sayılacak metin boş bırakılamaz! Örnek: \`Sayaç [metniniz]\`";
                 return `📊 **Metin Analizi:**\n• Karakter (Boşluklu): ${text.length}\n• Karakter (Boşluksuz): ${text.replace(/\s/g, '').length}\n• Kelime: ${text.split(/\s+/).length}`;
             }
 
             // 7. Birim Çevirici (BOŞ METİN KONTROLLÜ)
             if (clean.match(/^(?:\/çevir|çevir|dönüştür|birim çevir)/)) {
                 const val = clean.replace(/^(?:\/çevir|çevir|dönüştür|birim çevir)/i, "").trim();
-                if (!val) return "⚠️ **Uyarı:** Çevrilecek birim ve değer girilmedi! Örnek: `Çevir 30c` veya `Çevir 5km`";
+                if (!val) return "⚠️ **Uyarı:** Çevrilecek birim ve değer girilmedi! Örnek: \`Çevir 30c\` veya \`Çevir 5km\`";
                 if (val.includes("c")) {
                     let num = parseFloat(val);
                     return `🌡️ **Sıcaklık:** ${num}°C = **${(num * 9/5) + 32}°F**`;
@@ -388,25 +473,25 @@
                     let num = parseFloat(val);
                     return `📏 **Uzunluk:** ${num} km = **${num * 1000} metre**`;
                 }
-                return "⚠️ Desteklenen birimler: `c` (Sıcaklık) ve `km` (Mesafe). Örn: `30c çevir`";
+                return "⚠️ Desteklenen birimler: \`c\` (Sıcaklık) ve \`km\` (Mesafe). Örn: \`30c çevir\`";
             }
 
             // 8. Renk Dönüştürücü (BOŞ METİN KONTROLLÜ)
             if (clean.match(/^(?:\/renk|renk kodu|renk dönüştür)/)) {
                 let hex = clean.replace(/^(?:\/renk|renk kodu|renk dönüştür)/i, "").trim();
-                if (!hex) return "⚠️ **Uyarı:** Bir HEX renk kodu girmelisin! Örnek: `Renk #ff5733`";
+                if (!hex) return "⚠️ **Uyarı:** Bir HEX renk kodu girmelisin! Örnek: \`Renk #ff5733\`";
                 if (!hex.startsWith("#")) hex = "#" + hex;
                 if (/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.test(hex)) {
                     let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
                     return `🎨 **Renk Dönüşümü:**\nHEX: \`${hex}\`\nRGB: \`rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})\``;
                 }
-                return "⚠️ Geçerli bir HEX kodu girmedin. Örn: `renk kodu #ff5733`";
+                return "⚠️ Geçerli bir HEX kodu girmedin. Örn: \`renk kodu #ff5733\`";
             }
 
             // 9. Base64 (BOŞ METİN KONTROLLÜ)
             if (clean.match(/^(?:\/base64 kodla|base64 kodla|bunu şifrele base64)/)) {
                 const text = raw.replace(/^(?:\/base64 kodla|base64 kodla|bunu şifrele base64)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Şifrelenecek metin boş bırakılamaz! Örnek: `Base64 kodla Merhaba`";
+                if (!text) return "⚠️ **Uyarı:** Şifrelenecek metin boş bırakılamaz! Örnek: \`Base64 kodla Merhaba\`";
                 return `🔐 **Base64:** \`${btoa(text)}\``;
             }
             if (clean.match(/^(?:\/base64 çöz|base64 çöz|şifreyi çöz base64)/)) {
@@ -432,23 +517,23 @@
                     const min = parseInt(nums[0]), max = parseInt(nums[1]);
                     return `🎲 Seçilen sayı (${min}-${max}): **${Math.floor(Math.random() * (max - min + 1)) + min}**`;
                 }
-                return "⚠️ Lütfen iki sayı aralığı belirtin. Örnek: `1 ile 100 arası rastgele sayı seç`";
+                return "⚠️ Lütfen iki sayı aralığı belirtin. Örnek: \`1 ile 100 arası rastgele sayı seç\`";
             }
 
             // 12. Harf & Metin Dönüştürücüler (BOŞ METİN KONTROLLÜ)
             if (clean.match(/^(?:\/büyük|büyük harf)/)) {
                 const text = raw.replace(/^(?:\/büyük|büyük harf)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Büyütülecek metni yazmadın! Örnek: `Büyük harf merhaba`";
+                if (!text) return "⚠️ **Uyarı:** Büyütülecek metni yazmadın! Örnek: \`Büyük harf merhaba\`";
                 return `🔠 **Sonuç:**\n${text.toUpperCase()}`;
             }
             if (clean.match(/^(?:\/küçük|küçük harf)/)) {
                 const text = raw.replace(/^(?:\/küçük|küçük harf)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Küçültülecek metni yazmadın! Örnek: `Küçük harf MERHABA`";
+                if (!text) return "⚠️ **Uyarı:** Küçültülecek metni yazmadın! Örnek: \`Küçük harf MERHABA\`";
                 return `🔡 **Sonuç:**\n${text.toLowerCase()}`;
             }
             if (clean.match(/^(?:\/ters|ters çevir|tersten yaz)/)) {
                 const text = raw.replace(/^(?:\/ters|ters çevir|tersten yaz)/i, "").trim();
-                if (!text) return "⚠️ **Uyarı:** Ters çevrilecek metni yazmadın! Örnek: `Ters çevir merhaba`";
+                if (!text) return "⚠️ **Uyarı:** Ters çevrilecek metni yazmadın! Örnek: \`Ters çevir merhaba\`";
                 return `🔄 **Ters Metin:**\n${text.split('').reverse().join('')}`;
             }
             if (clean.match(/^(?:\/mors|mors)/)) {
@@ -476,7 +561,7 @@
             }
             if (clean.match(/^(?:\/eli5|eli5)/)) {
                 const topic = raw.replace(/^(?:\/eli5|eli5)/i, "").trim();
-                if (!topic) return "⚠️ **Uyarı:** Açıklanmasını istediğin bir konu girmelisin! Örn: `ELI5 Kara delik`";
+                if (!topic) return "⚠️ **Uyarı:** Açıklanmasını istediğin bir konu girmelisin! Örn: \`ELI5 Kara delik\`";
                 return `🧸 **5 Yaşındakine Anlatım Modu:**\n"${topic}" konusu, tıpkı legoları üst üste dizmek gibidir. Küçük parçaların birleşmesiyle oluşur.\n*Spark Bu Komutu Geliştiricek!*`;
             }
             
@@ -495,7 +580,7 @@
             // Görevler (BOŞ METİN KONTROLLÜ)
             if (clean.match(/^(?:\/görev ekle|görev ekle)/)) {
                 const task = raw.replace(/^(?:\/görev ekle|görev ekle)/i, "").trim();
-                if (!task) return "⚠️ **Uyarı:** Eklenecek görevi yazmalısın! Örnek: `Görev ekle Kitap oku`";
+                if (!task) return "⚠️ **Uyarı:** Eklenecek görevi yazmalısın! Örnek: \`Görev ekle Kitap oku\`";
                 userToDos.push(task); saveState();
                 return `✅ Görev eklendi: **"${task}"**`;
             }
@@ -550,6 +635,8 @@
 • \`Beni motive et\`, \`Espri yap\`
 • \`Görev ekle [görev]\`, \`Görevlerim\`, \`Görevleri sil\`
 • Ayrıca uzay, müzik, teknoloji, gelecek gibi bir çok konuda sohbet edebiliriz!
+-------------------
+• *Şuan Gelişme Aşmasındayım Yakında Sistemlerim Gelişecek, Sohbet Sistemim İyileşecek*
 `;
             }
 
