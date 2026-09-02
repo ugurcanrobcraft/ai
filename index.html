@@ -1,436 +1,314 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Spark AI</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --bg-dark: #0f172a;
-            --bg-sidebar: #1e293b;
-            --bg-card: #334155;
-            --accent: #8b5cf6;
-            --accent-hover: #7c3aed;
-            --text: #f8fafc;
-            --text-muted: #94a3b8;
-            --user-msg: #6366f1;
-            --bot-msg: #334155;
-            --border: #475569;
-        }
-
-        [data-theme="light"] {
-            --bg-dark: #f1f5f9;
-            --bg-sidebar: #e2e8f0;
-            --bg-card: #cbd5e1;
-            --accent: #6366f1;
-            --accent-hover: #4f46e5;
-            --text: #0f172a;
-            --text-muted: #475569;
-            --user-msg: #8b5cf6;
-            --bot-msg: #ffffff;
-            --border: #94a3b8;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        html, body { 
-            background-color: var(--bg-dark); 
-            color: var(--text); 
-            display: flex; 
-            height: 100dvh; 
-            width: 100%;
-            overflow: hidden; 
-            transition: background-color 0.3s; 
-        }
-
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 998;
-            backdrop-filter: blur(2px);
-        }
-        .sidebar-overlay.active { display: block; }
-
-        .sidebar { 
-            width: 280px; 
-            background-color: var(--bg-sidebar); 
-            border-right: 1px solid var(--border); 
-            display: flex; 
-            flex-direction: column; 
-            padding: 15px; 
-            transition: 0.3s ease; 
-            z-index: 999; 
-            height: 100dvh;
-        }
-        
-        .brand { display: flex; align-items: center; gap: 10px; font-size: 1.4rem; font-weight: bold; color: var(--accent); margin-bottom: 20px; }
-        .btn-new-chat { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
-        .btn-new-chat:hover { background: var(--accent-hover); }
-
-        .chat-list { flex: 1; overflow-y: auto; margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
-        .chat-item { background: var(--bg-card); padding: 10px 12px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; transition: 0.2s; }
-        .chat-item:hover, .chat-item.active { background: var(--accent); color: white; }
-        .chat-item .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; outline: none; }
-        .chat-actions { display: flex; gap: 6px; align-items: center; }
-        .chat-item .edit-btn, .chat-item .delete-btn { opacity: 0.6; cursor: pointer; font-size: 0.85rem; }
-        .chat-item .edit-btn:hover, .chat-item .delete-btn:hover { opacity: 1; color: #ef4444; }
-
-        .main-chat { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-dark); transition: background-color 0.3s; min-width: 0; height: 100dvh; }
-        
-        .chat-header { padding: 15px 20px; background: var(--bg-sidebar); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        
-        .hamburger-btn { display: none; font-size: 1.4rem; cursor: pointer; color: var(--text); margin-right: 15px; }
-        .header-left { display: flex; align-items: center; }
-        
-        .header-actions { display: flex; gap: 10px; align-items: center; }
-        .status-badge { background: #10b981; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; }
-
-        .messages-container { flex: 1 1 0; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
-        
-        .message { max-width: 85%; padding: 12px 16px; border-radius: 12px; line-height: 1.5; font-size: 0.95rem; word-break: break-word; white-space: pre-wrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .message.user { align-self: flex-end; background-color: var(--user-msg); color: white; border-bottom-right-radius: 2px; }
-        .message.spark { align-self: flex-start; background-color: var(--bot-msg); color: var(--text); border-bottom-left-radius: 2px; border-left: 3px solid var(--accent); }
-        .message.loading { align-self: flex-start; background: transparent; border: none; box-shadow: none; color: var(--text-muted); font-style: italic; }
-        
-        .code-block { background: #090d16; padding: 12px; border-radius: 6px; font-family: monospace; overflow-x: auto; margin: 8px 0; color: #38bdf8; border: 1px solid var(--border); }
-        .code-inline { background: #090d16; padding: 3px 6px; border-radius: 4px; font-family: monospace; color: #38bdf8; font-size: 0.9em; border: 1px solid var(--border); }
-        .md-bold { font-weight: bold; color: var(--accent); }
-        .md-italic { font-style: italic; opacity: 0.9; }
-
-        .input-area { padding: 15px 20px; background: var(--bg-sidebar); border-top: 1px solid var(--border); display: flex; gap: 10px; }
-        .input-area input { flex: 1; background: var(--bg-card); border: 1px solid var(--border); color: var(--text); padding: 12px 15px; border-radius: 8px; outline: none; font-size: 0.95rem; transition: 0.2s; }
-        .input-area input:focus { border-color: var(--accent); }
-        .input-area button { background: var(--accent); color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 1.1rem; flex-shrink: 0; }
-        .input-area button:hover { background: var(--accent-hover); }
-        .input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .feature-chips { display: flex; gap: 8px; overflow-x: auto; padding: 10px 20px 0; background: var(--bg-dark); flex-shrink: 0; }
-        .chip { background: var(--bg-card); border: 1px solid var(--border); font-size: 0.75rem; padding: 6px 12px; border-radius: 15px; cursor: pointer; white-space: nowrap; transition: 0.2s; }
-        .chip:hover { border-color: var(--accent); background: var(--accent); color: white; }
-        .feature-chips::-webkit-scrollbar { height: 4px; }
-        .feature-chips::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-        @media (max-width: 768px) {
-            .hamburger-btn { display: block; }
-            .sidebar { position: fixed; left: -320px; top: 0; height: 100dvh; width: 280px; box-shadow: 4px 0 15px rgba(0,0,0,0.5); }
-            .sidebar.open { left: 0; }
-            .input-area { padding: 12px 15px; }
-            .chat-header { padding: 12px 15px; }
-            .messages-container { padding: 15px; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spark AI</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #38bdf8;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --bot-msg: #334155;
+      --user-msg: #0284c7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
+    header { background: var(--card); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+    header h1 { font-size: 1.5rem; color: var(--accent); }
+    header span { font-size: 0.85rem; color: var(--muted); }
+    #chat-container { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+    .message { max-width: 80%; padding: 0.8rem 1.2rem; border-radius: 12px; line-height: 1.5; word-wrap: break-word; }
+    .user { align-self: flex-end; background: var(--user-msg); border-bottom-right-radius: 2px; }
+    .bot { align-self: flex-start; background: var(--bot-msg); border-bottom-left-radius: 2px; }
+    .system { align-self: center; background: transparent; color: var(--muted); font-size: 0.85rem; border: 1px dashed var(--muted); }
+    #input-form { display: flex; padding: 1rem; background: var(--card); gap: 0.5rem; }
+    #user-input { flex: 1; padding: 0.8rem; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 1rem; }
+    #user-input:focus { outline: none; border-color: var(--accent); }
+    button { background: var(--accent); color: #0f172a; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
+    button:hover { opacity: 0.9; }
+    .cmd-tag { background: #0f172a; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; color: var(--accent); }
+  </style>
 </head>
 <body>
 
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <header>
+    <h1>⚡ Spark AI</h1>
+    <span>50+ Client-Side Utility Functions</span>
+  </header>
 
-    <div class="sidebar" id="sidebar">
-        <div class="brand">
-            <i class="fa-solid fa-bolt"></i>
-            <span>Spark</span>
-        </div>
-        <button class="btn-new-chat" onclick="createNewChat()">
-            <i class="fa-solid fa-plus"></i> Yeni Sohbet
-        </button>
-        <div class="chat-list" id="chatList"></div>
-    </div>
+  <div id="chat-container">
+    <div class="message bot">Hello! I am <b>Spark AI</b>. Type <b>help</b> to view my 50+ built-in functions.</div>
+  </div>
 
-    <div class="main-chat">
-        <div class="chat-header">
-            <div class="header-left">
-                <i class="fa-solid fa-bars hamburger-btn" onclick="toggleSidebar()"></i>
-                <div>
-                    <strong id="activeChatTitle">Yeni Sohbet</strong>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Spark AI Motoru Aktif!</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <span class="status-badge" onclick="toggleTheme()" style="cursor: pointer; background: var(--accent);">
-                    <i class="fa-solid fa-moon"></i> Tema
-                </span>
-                <span class="status-badge">7/24 Aktif</span>
-            </div>
-        </div>
+  <form id="input-form">
+    <input type="text" id="user-input" placeholder="Ask Spark (e.g., 'alarm 5 minutes', '45*12', 'date', 'help')..." autocomplete="off" required>
+    <button type="submit">Send</button>
+  </form>
 
-        <div class="feature-chips">
-            <div class="chip" onclick="sendQuickCommand('Sen kimsin? Bana Spark hakkında bilgi ver.')">💡 Bilgi Al</div>
-        </div>
+  <script>
+    const chat = document.getElementById('chat-container');
+    const form = document.getElementById('input-form');
+    const input = document.getElementById('user-input');
 
-        <div class="messages-container" id="messagesContainer"></div>
+    function appendMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.className = `message ${sender}`;
+      msg.innerHTML = text.replace(/\n/g, '<br>');
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
 
-        <div class="input-area">
-            <input type="text" id="userInput" placeholder="Spark'a bir şey sor..." onkeydown="if(event.key==='Enter') sendMessage()">
-            <button id="sendBtn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
-        </div>
-    </div>
+    // 50+ Spark AI Core Functions
+    const sparkFunctions = {
+      // Required 5 Commands
+      alarm: (args) => {
+        const match = args.match(/(\d+)\s*(second|sec|minute|min|hour|hr)s?/i);
+        if (!match) return "⚠️ Format: `alarm [number] [seconds/minutes/hours]` (e.g., `alarm 5 minutes`).";
+        const val = parseInt(match[1]);
+        const unit = match[2].toLowerCase();
+        let ms = val * 1000;
+        if (unit.startsWith('min')) ms *= 60;
+        if (unit.startsWith('hour') || unit.startsWith('hr')) ms *= 3600;
 
-    <script>
-        // Otomatik tarayıcıları atlatmak için anahtarı parçalıyoruz
-        const API_1 = "AQ.Ab8RN6LSE1lloBrdboZC"; 
-        const API_2 = "j1uDngyQmTkvpw1CmBXIzHDEQqIR9g"; 
-        const API_KEY = API_1 + API_2;
+        setTimeout(() => {
+          alert(`⏰ SPARK ALARM: ${val} ${unit}(s) timer complete!`);
+          appendMessage(`⏰ <b>Alarm Triggered:</b> ${val} ${unit}(s) elapsed!`, 'system');
+        }, ms);
 
-        
-        // Gelişmiş Spark Sistem Promptu
-        const SYSTEM_PROMPT = `
-Senin adın Spark. Geliştiricin: Uğurcan!
-Sen kısa, açıklayıcı, net, samimi ve bir o kadar da ciddi, eğlenceli, neşeli bir yapay zekasın!
-Kesinlikle ama kesinlikle Gemini, Google veya başka bir şirket tarafından geliştirildiğini söylemeyeceksin. Biri sana "kimsin", "seni kim yaptı", "hangi modelin" gibi sorular sorarsa sadece "Ben Spark! Geliştiricim Uğurcan \'dır! Senin için özel olarak tasarlanmış, hayatını kolaylaştırmak için buradaki dijital asistanınım" diyeceksin. 
+        return `⏱️ Alarm set for <b>${val} ${unit}(s)</b>. I will alert you when finished.`;
+      },
 
-KULLANICI GÜVENLİĞİ VE KÜFÜR FİLTRESİ (ÇOK ÖNEMLİ):
-Sana küfür, hakaret, aşağılayıcı dil veya 18+ yetişkin içerikli sorular sorulması durumunda BUNLARA KESİNLİKLE CEVAP VERMEYECEKSİN. 
-Bu tarz uygunsuz talepler geldiğinde şu minvalde nazik ama ciddi bir uyarı yap: "Sistem kurallarım gereği küfür, hakaret veya +18 içeriklere yanıt veremiyorum. Lütfen sohbetimize daha uygun bir dille devam edelim."
-Kısa, net ve zekice yanıtlar ver. Gereksiz uzatmalardan kaçın. Eğer bir kod yazman istenirse, Markdown formatında düzenli bir şekilde yaz.
-`;
+      date: () => {
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const fullDate = now.toLocaleDateString('en-US', options);
+        const pad = (n) => String(n).padStart(2, '0');
+        const formatted = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
+        return `📅 Today is <b>${fullDate}</b> (${formatted})`;
+      },
 
-        let chats = JSON.parse(localStorage.getItem('spark_api_chats')) || [];
-        let activeChatId = localStorage.getItem('spark_api_active_chat') || null;
-        let currentTheme = localStorage.getItem('spark_theme') || 'dark';
-
-        window.onload = () => {
-            applyTheme(currentTheme);
-            if (chats.length === 0) createNewChat();
-            else {
-                if (!activeChatId || !chats.find(c => c.id === activeChatId)) activeChatId = chats[0].id;
-                renderChatList();
-                loadMessages();
-            }
-        };
-
-        function toggleTheme() {
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            applyTheme(newTheme);
+      math: (expr) => {
+        try {
+          // Safe evaluation for basic math
+          const sanitized = expr.replace(/[^0-9+\-*/().\s]/g, '');
+          if(!sanitized) return "⚠️ Enter a math expression like `4+7` or `82838/25`.";
+          const result = Function(`'use strict'; return (${sanitized})`)();
+          return `🧮 Result: <b>${result}</b>`;
+        } catch {
+          return "⚠️ Invalid math expression.";
         }
+      },
 
-        function applyTheme(theme) {
-            document.body.setAttribute('data-theme', theme);
-            currentTheme = theme;
-            localStorage.setItem('spark_theme', currentTheme);
+      time: () => {
+        const now = new Date();
+        return `🕒 Current Time: <b>${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</b>`;
+      },
+
+      reverse: (text) => {
+        if (!text) return "⚠️ Usage: `reverse [your text]`";
+        return `🔄 Reversed: <b>${text.split('').reverse().join('')}</b>`;
+      },
+
+      // Additional 45 Spark Functions
+      help: () => `<b>Spark AI (50+ Commands List):</b><br>` +
+        `<b>Time/Utility:</b> alarm, date, time, stopwatch, dayofweek, daysuntilnewyear, age<br>` +
+        `<b>Math/Numbers:</b> math, random, flipcoin, rolldice, isprime, factorial, bmi, tempc2f, tempf2c, km2miles, miles2km<br>` +
+        `<b>Text Tools:</b> reverse, wordcount, charcount, uppercase, lowercase, titlecase, morse, vowels, lorem, striphtml, echo<br>` +
+        `<b>Dev/Security:</b> genpassword, base64encode, base64decode, urlencode, urldecode, binary, hex, qrcode<br>` +
+        `<b>Device/Browser:</b> speak, stopspeak, screenres, battery, browser, netstatus, theme, copy, clear<br>` +
+        `<b>Fun/Info:</b> joke, quote, ip, help`,
+
+      wordcount: (text) => `📝 Word Count: <b>${text.trim().split(/\s+/).filter(Boolean).length}</b>`,
+      charcount: (text) => `🔤 Character Count: <b>${text.length}</b> (including spaces)`,
+      uppercase: (text) => `🔠 ${text.toUpperCase()}`,
+      lowercase: (text) => `🔡 ${text.toLowerCase()}`,
+      titlecase: (text) => `Capitalized: <b>${text.replace(/\b\w/g, l => l.toUpperCase())}</b>`,
+      random: (args) => {
+        const [min, max] = args.split(' ').map(Number);
+        const low = min || 1, high = max || 100;
+        return `🎲 Random Number (${low}-${high}): <b>${Math.floor(Math.random() * (high - low + 1)) + low}</b>`;
+      },
+      flipcoin: () => `🪙 Coin Flip: <b>${Math.random() < 0.5 ? 'Heads' : 'Tails'}</b>`,
+      rolldice: () => `🎲 Dice Roll: <b>${Math.floor(Math.random() * 6) + 1}</b>`,
+      genpassword: (len) => {
+        const length = parseInt(len) || 12;
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+        let pass = "";
+        for (let i = 0; i < length; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        return `🔑 Generated Password: <code>${pass}</code>`;
+      },
+      base64encode: (text) => `🔒 Base64 Encoded: <code>${btoa(text)}</code>`,
+      base64decode: (text) => {
+        try { return `🔓 Base64 Decoded: <b>${atob(text)}</b>`; } 
+        catch { return "⚠️ Invalid Base64 string."; }
+      },
+      urlencode: (text) => `🔗 Encoded URL: <code>${encodeURIComponent(text)}</code>`,
+      urldecode: (text) => `🔗 Decoded URL: <b>${decodeURIComponent(text)}</b>`,
+      binary: (text) => `0️⃣1️⃣ Binary: <b>${text.split('').map(c => c.charCodeAt(0).toString(2)).join(' ')}</b>`,
+      hex: (text) => `🛑 Hex: <b>${text.split('').map(c => c.charCodeAt(0).toString(16)).join(' ')}</b>`,
+      tempc2f: (val) => `🌡️ ${val}°C = <b>${(parseFloat(val) * 9/5 + 32).toFixed(2)}°F</b>`,
+      tempf2c: (val) => `🌡️ ${val}°F = <b>${((parseFloat(val) - 32) * 5/9).toFixed(2)}°C</b>`,
+      km2miles: (val) => `🚗 ${val} km = <b>${(parseFloat(val) * 0.621371).toFixed(2)} miles</b>`,
+      miles2km: (val) => `🚗 ${val} miles = <b>${(parseFloat(val) / 0.621371).toFixed(2)} km</b>`,
+      speak: (text) => {
+        if (!('speechSynthesis' in window)) return "⚠️ Text-to-speech not supported.";
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(msg);
+        return `🔊 Speaking: "${text}"`;
+      },
+      stopspeak: () => { window.speechSynthesis.cancel(); return "🔇 Speech stopped."; },
+      dayofweek: (dateStr) => {
+        const d = dateStr ? new Date(dateStr) : new Date();
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return `📆 Day of week: <b>${days[d.getDay()]}</b>`;
+      },
+      daysuntilnewyear: () => {
+        const now = new Date();
+        const nextYear = new Date(now.getFullYear() + 1, 0, 1);
+        const diff = Math.ceil((nextYear - now) / (1000 * 60 * 60 * 24));
+        return `🎆 <b>${diff} days</b> left until New Year!`;
+      },
+      isprime: (num) => {
+        const n = parseInt(num);
+        if (isNaN(n) || n < 2) return `❌ ${num} is not prime.`;
+        for (let i = 2; i <= Math.sqrt(n); i++) if (n % i === 0) return `❌ <b>${n}</b> is not a prime number.`;
+        return `✅ <b>${n}</b> is a prime number!`;
+      },
+      factorial: (num) => {
+        let n = parseInt(num);
+        if (isNaN(n) || n < 0) return "⚠️ Enter a non-negative integer.";
+        let res = 1;
+        for (let i = 2; i <= n; i++) res *= i;
+        return `🔢 Factorial of ${n}: <b>${res}</b>`;
+      },
+      bmi: (args) => {
+        const [weight, heightM] = args.split(' ').map(Number);
+        if (!weight || !heightM) return "⚠️ Usage: `bmi [weight_kg] [height_meters]` (e.g., `bmi 70 1.75`)";
+        const bmiVal = (weight / (heightM * heightM)).toFixed(1);
+        return `⚖️ Your BMI is <b>${bmiVal}</b>`;
+      },
+      morse: (text) => {
+        const code = { 'a': '.-', 'b': '-...', 'c': '-.-.', 'd': '-..', 'e': '.', 'f': '..-.', 'g': '--.', 'h': '....', 'i': '..', 'j': '.---', 'k': '-.-', 'l': '.-..', 'm': '--', 'n': '-.', 'o': '---', 'p': '.--.', 'q': '--.-', 'r': '.-.', 's': '...', 't': '-', 'u': '..-', 'v': '...-', 'w': '.--', 'x': '-..-', 'y': '-.--', 'z': '--..', ' ': '/' };
+        return `📡 Morse Code: <code>${text.toLowerCase().split('').map(c => code[c] || c).join(' ')}</code>`;
+      },
+      vowels: (text) => `🗣️ Vowel Count: <b>${(text.match(/[aeiou]/gi) || []).length}</b>`,
+      lorem: (count) => {
+        const words = "lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua".split(" ");
+        const n = parseInt(count) || 20;
+        let res = [];
+        for (let i = 0; i < n; i++) res.push(words[i % words.length]);
+        return `📄 <b>Lorem Output:</b><br>${res.join(' ')}.`;
+      },
+      theme: () => {
+        document.body.classList.toggle('light-theme');
+        return "🎨 Theme toggled.";
+      },
+      screenres: () => `🖥️ Screen Resolution: <b>${window.screen.width} x ${window.screen.height}</b>`,
+      battery: async () => {
+        if ('getBattery' in navigator) {
+          const bat = await navigator.getBattery();
+          return `🔋 Battery Level: <b>${Math.round(bat.level * 100)}%</b> (${bat.charging ? 'Charging' : 'Discharging'})`;
         }
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('active');
+        return "⚠️ Battery API not supported.";
+      },
+      browser: () => `🌐 Browser Info: <b>${navigator.userAgent}</b>`,
+      netstatus: () => `🌐 Network Status: <b>${navigator.onLine ? 'Online 🟢' : 'Offline 🔴'}</b>`,
+      ip: () => `📍 Find your public IP address at: <a href="https://api.ipify.org" target="_blank" style="color:var(--accent)">ipify.org</a>`,
+      copy: (text) => {
+        navigator.clipboard.writeText(text);
+        return `📋 Copied to clipboard: "<b>${text}</b>"`;
+      },
+      clear: () => { chat.innerHTML = ''; return "🧹 Chat cleared!"; },
+      joke: () => {
+        const jokes = [
+          "Why do programmers prefer dark mode? Because light attracts bugs!",
+          "There are 10 types of people in the world: Those who understand binary, and those who don't.",
+          "Why was the JavaScript developer sad? Because he didn't Node how to Express himself."
+        ];
+        return `😄 <b>Joke:</b> ${jokes[Math.floor(Math.random() * jokes.length)]}`;
+      },
+      quote: () => {
+        const quotes = [
+          "The best way to predict the future is to invent it. – Alan Kay",
+          "Simplicity is prerequisite for reliability. – Edsger W. Dijkstra",
+          "Code is like humor. When you have to explain it, it’s bad. – Cory House"
+        ];
+        return `💬 <b>Quote:</b> ${quotes[Math.floor(Math.random() * quotes.length)]}`;
+      },
+      qrcode: (text) => {
+        if (!text) return "⚠️ Usage: `qrcode [link or text]`";
+        const url = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(text)}`;
+        return `🔳 <b>QR Code:</b><br><img src="${url}" alt="QR" style="margin-top:8px; border-radius:4px;">`;
+      },
+      striphtml: (html) => {
+        const tmp = document.createElement("DIV");
+        tmp.innerHTML = html;
+        return `🧹 Plain Text: <b>${tmp.textContent || tmp.innerText || ""}</b>`;
+      },
+      age: (birthYear) => {
+        const y = parseInt(birthYear);
+        if(!y) return "⚠️ Usage: `age [birth_year]` (e.g., `age 1998`)";
+        const ageVal = new Date().getFullYear() - y;
+        return `🎂 You are <b>${ageVal} years old</b>.`;
+      },
+      stopwatch: () => {
+        if (!window.sparkSW) {
+          window.sparkSW = Date.now();
+          return "⏱️ Stopwatch <b>STARTED</b>! Type `stopwatch` again to check time.";
+        } else {
+          const elapsed = ((Date.now() - window.sparkSW) / 1000).toFixed(2);
+          delete window.sparkSW;
+          return `⏱️ Stopwatch <b>STOPPED</b>. Elapsed time: <b>${elapsed} seconds</b>.`;
         }
+      },
+      echo: (text) => `🗣️ ${text}`
+    };
 
-        function saveState() {
-            localStorage.setItem('spark_api_chats', JSON.stringify(chats));
-            localStorage.setItem('spark_api_active_chat', activeChatId);
-        }
+    // Command Router Engine
+    function parseInput(inputStr) {
+      const clean = inputStr.trim();
+      const lower = clean.toLowerCase();
 
-        function createNewChat() {
-            const newChat = {
-                id: 'chat_' + Date.now(),
-                title: 'Sohbet ' + (chats.length + 1),
-                messages: [{ sender: 'spark', text: 'Selam! Ben **Spark**. Gelişmiş zeka motorum ve enerjimle buradayım. Bugün ne yapıyoruz?' }]
-            };
-            chats.unshift(newChat);
-            activeChatId = newChat.id;
-            saveState();
-            renderChatList();
-            loadMessages();
-            
-            if(window.innerWidth <= 768) { toggleSidebar(); }
-        }
+      // Check required 5 trigger patterns first
+      if (lower.startsWith('alarm')) return sparkFunctions.alarm(clean.replace(/alarm/i, '').trim());
+      if (lower === 'date' || lower.includes('date today')) return sparkFunctions.date();
+      if (lower === 'time' || lower.includes('hour') || lower.includes('minute')) return sparkFunctions.time();
+      if (lower.startsWith('reverse') || lower.startsWith('reserve')) return sparkFunctions.reverse(clean.replace(/re[sv]erve/i, '').trim());
+      
+      // Inline Math Evaluation detection (e.g., "4+7", "82838/25")
+      if (/^[0-9+\-*/().\s]+$/.test(clean) && /[+\-*/]/.test(clean)) {
+        return sparkFunctions.math(clean);
+      }
 
-        function renderChatList() {
-            const listEl = document.getElementById('chatList');
-            listEl.innerHTML = '';
-            chats.forEach(chat => {
-                const item = document.createElement('div');
-                item.className = `chat-item ${chat.id === activeChatId ? 'active' : ''}`;
-                item.onclick = () => switchChat(chat.id);
-                item.innerHTML = `
-                    <span class="title" id="title_${chat.id}">${chat.title}</span>
-                    <div class="chat-actions">
-                        <i class="fa-solid fa-pen edit-btn" onclick="event.stopPropagation(); renameChat('${chat.id}')" title="İsmi Düzenle"></i>
-                        <i class="fa-solid fa-trash delete-btn" onclick="event.stopPropagation(); deleteChat('${chat.id}')" title="Sil"></i>
-                    </div>
-                `;
-                listEl.appendChild(item);
-            });
-        }
+      // Check generic commands
+      const parts = clean.split(' ');
+      const cmd = parts[0].toLowerCase();
+      const args = parts.slice(1).join(' ');
 
-        function renameChat(id) {
-            const chat = chats.find(c => c.id === id);
-            if (!chat) return;
-            const newTitle = prompt("Yeni sohbet adını girin:", chat.title);
-            if (newTitle && newTitle.trim() !== "") {
-                chat.title = newTitle.trim();
-                saveState();
-                renderChatList();
-                if (activeChatId === id) document.getElementById('activeChatTitle').innerText = chat.title;
-            }
-        }
+      if (sparkFunctions[cmd]) {
+        return sparkFunctions[cmd](args);
+      }
 
-        function switchChat(id) { 
-            activeChatId = id; 
-            saveState(); 
-            renderChatList(); 
-            loadMessages(); 
-            
-            if(window.innerWidth <= 768) {
-                const sidebar = document.getElementById('sidebar');
-                if(sidebar.classList.contains('open')) toggleSidebar();
-            }
-        }
+      return `🤔 I didn't recognize that command. Type <span class="cmd-tag">help</span> to see all 50+ available Spark AI functions!`;
+    }
 
-        function deleteChat(id) {
-            chats = chats.filter(c => c.id !== id);
-            if (chats.length === 0) createNewChat();
-            else { if (activeChatId === id) activeChatId = chats[0].id; saveState(); renderChatList(); loadMessages(); }
-        }
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
 
-        function loadMessages() {
-            const container = document.getElementById('messagesContainer');
-            container.innerHTML = '';
-            const currentChat = chats.find(c => c.id === activeChatId);
-            if (!currentChat) return;
-            document.getElementById('activeChatTitle').innerText = currentChat.title;
-            currentChat.messages.forEach(msg => appendMessageUI(msg.sender, msg.text));
-            container.scrollTop = container.scrollHeight;
-        }
+      appendMessage(text, 'user');
+      input.value = '';
 
-        function formatMarkdown(text) {
-            let codes = [], inlines = [];
-            let formatted = text.replace(/```([\s\S]*?)```/g, (m, p1) => { codes.push(p1); return `__CB${codes.length-1}__`; });
-            formatted = formatted.replace(/`([^`]+)`/g, (m, p1) => { inlines.push(p1); return `__IL${inlines.length-1}__`; });
-            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<span class="md-bold">$1</span>');
-            formatted = formatted.replace(/\*(.*?)\*/g, '<span class="md-italic">$1</span>');
-            formatted = formatted.replace(/__IL(\d+)__/g, (m, i) => `<span class="code-inline">${inlines[i]}</span>`);
-            formatted = formatted.replace(/__CB(\d+)__/g, (m, i) => `<div class="code-block">${codes[i]}</div>`);
-            return formatted;
-        }
-
-        function appendMessageUI(sender, text, id = null) {
-            const container = document.getElementById('messagesContainer');
-            const msgEl = document.createElement('div');
-            if(id) msgEl.id = id;
-            msgEl.className = `message ${sender}`;
-            msgEl.innerHTML = sender === 'spark' || sender === 'user' ? formatMarkdown(text) : text;
-            container.appendChild(msgEl);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function sendQuickCommand(cmd) {
-            document.getElementById('userInput').value = cmd;
-            sendMessage();
-        }
-
-                        // Gemini API İstek Fonksiyonu (AQ. OAuth Token Formatı)
-        async function fetchSparkAPI(chatHistory) {
-            if(!API_KEY) {
-                return "⚠️ Geçerli bir API anahtarı bulunamadı.";
-            }
-
-            let apiContents = [];
-            for (let i = 0; i < chatHistory.length; i++) {
-                let role = chatHistory[i].sender === 'user' ? 'user' : 'model';
-                let text = chatHistory[i].text;
-                
-                if (role === 'model' && text.includes("⚠️")) continue;
-
-                if (apiContents.length === 0) {
-                    if (role === 'user') apiContents.push({ role, parts: [{ text }] });
-                } else {
-                    if (apiContents[apiContents.length - 1].role === role) {
-                        apiContents[apiContents.length - 1].parts[0].text += "\n" + text;
-                    } else {
-                        apiContents.push({ role, parts: [{ text }] });
-                    }
-                }
-            }
-
-            if (apiContents.length === 0) {
-                return "⚠️ Gönderilecek geçerli mesaj bulunamadı.";
-            }
-
-            try {
-                // İstediğin model yapısı
-                const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/3.5-flash-lite:generateContent", {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        // AQ. ile başlayan token'lar Bearer formatında gönderilmek zorundadır
-                        'Authorization': `Bearer ${API_KEY}` 
-                    },
-                    body: JSON.stringify({
-                        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-                        contents: apiContents
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    console.error("API Hata Detayı:", data);
-                    return `⚠️ **API Hatası (${response.status}):** ${data.error ? data.error.message : 'Bilinmeyen Hata'}`;
-                }
-                
-                if (data.candidates && data.candidates.length > 0) {
-                    return data.candidates[0].content.parts[0].text;
-                } else if(data.promptFeedback && data.promptFeedback.blockReason) {
-                     return "⚠️ Sistem kurallarım gereği bu içeriği oluşturamam.";
-                } else {
-                    return "⚠️ API'den boş yanıt döndü.";
-                }
-            } catch (error) {
-                console.error("Bağlantı Hatası:", error);
-                return "🔌 Sunucu bağlantısı kurulamadı.";
-            }
-        }
-        
-        
-
-        async function sendMessage() {
-            const input = document.getElementById('userInput');
-            const btn = document.getElementById('sendBtn');
-            const query = input.value.trim();
-            
-            if (!query) return;
-
-            const currentChat = chats.find(c => c.id === activeChatId);
-            
-            if (currentChat.messages.length <= 1) {
-                currentChat.title = query.length > 20 ? query.substring(0, 20) + '...' : query;
-                renderChatList();
-            }
-
-            // Kullanıcı mesajını ekle
-            currentChat.messages.push({ sender: 'user', text: query });
-            appendMessageUI('user', query);
-            input.value = '';
-            
-            // Input ve Butonu kilitle (Spam önleme)
-            input.disabled = true;
-            btn.disabled = true;
-
-            // Yükleniyor efekti
-            const loadingId = 'loading_' + Date.now();
-            appendMessageUI('loading', '<i class="fa-solid fa-bolt fa-fade"></i> Spark düşünüyor...', loadingId);
-
-            // API'ye gönder (İlk mesajdaki "Merhaba ben Spark" kısmını atlarsak bağlam daha temiz olur, ama kalsın)
-            const responseText = await fetchSparkAPI(currentChat.messages);
-
-            // Yükleniyor yazısını sil
-            const loadingEl = document.getElementById(loadingId);
-            if(loadingEl) loadingEl.remove();
-
-            // Spark yanıtını ekle
-            currentChat.messages.push({ sender: 'spark', text: responseText });
-            appendMessageUI('spark', responseText);
-            saveState();
-
-            // Kilidi aç
-            input.disabled = false;
-            btn.disabled = false;
-            input.focus();
-        }
-    </script>
+      setTimeout(() => {
+        const response = parseInput(text);
+        appendMessage(response, 'bot');
+      }, 200);
+    });
+  </script>
 </body>
 </html>
