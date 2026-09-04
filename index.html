@@ -36,11 +36,11 @@
 
   <header>
     <h1>⚡ Spark AI</h1>
-    <span>50+ Client-Side Utility Functions</span>
+    <span>40+ Client-Side Utility Functions</span>
   </header>
 
   <div id="chat-container">
-    <div class="message bot">Hello! I am <b>Spark AI</b>. Type <b>help</b> to view my 50+ built-in functions.</div>
+    <div class="message bot">Hello! I am <b>Spark AI</b>. Type <b>help</b> to view my 40+ built-in functions.</div>
   </div>
 
   <form id="input-form">
@@ -107,16 +107,11 @@
         return `🕒 Current Time: <b>${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</b>`;
       },
 
-      reverse: (text) => {
-        if (!text) return "⚠️ Usage: `reverse [your text]`";
-        return `🔄 Reversed: <b>${text.split('').reverse().join('')}</b>`;
-      },
-
       // Additional 45 Spark Functions
       help: () => `<b>Spark AI (50+ Commands List):</b><br>` +
         `<b>Time/Utility:</b> alarm, date, time, stopwatch, dayofweek, daysuntilnewyear, age<br>` +
         `<b>Math/Numbers:</b> math, random, flipcoin, rolldice, isprime, factorial, bmi, tempc2f, tempf2c, km2miles, miles2km<br>` +
-        `<b>Text Tools:</b> reverse, wordcount, charcount, uppercase, lowercase, titlecase, morse, vowels, lorem, striphtml, echo<br>` +
+        `<b>Text Tools:</b> reserve, wordcount, charcount, uppercase, lowercase, titlecase, morse, echo<br>` +
         `<b>Dev/Security:</b> genpassword, base64encode, base64decode, urlencode, urldecode, binary, hex, qrcode<br>` +
         `<b>Device/Browser:</b> speak, stopspeak, screenres, battery, browser, netstatus, theme, copy, clear<br>` +
         `<b>Fun/Info:</b> joke, quote, ip, help`,
@@ -172,12 +167,6 @@
         const diff = Math.ceil((nextYear - now) / (1000 * 60 * 60 * 24));
         return `🎆 <b>${diff} days</b> left until New Year!`;
       },
-      isprime: (num) => {
-        const n = parseInt(num);
-        if (isNaN(n) || n < 2) return `❌ ${num} is not prime.`;
-        for (let i = 2; i <= Math.sqrt(n); i++) if (n % i === 0) return `❌ <b>${n}</b> is not a prime number.`;
-        return `✅ <b>${n}</b> is a prime number!`;
-      },
       factorial: (num) => {
         let n = parseInt(num);
         if (isNaN(n) || n < 0) return "⚠️ Enter a non-negative integer.";
@@ -194,14 +183,6 @@
       morse: (text) => {
         const code = { 'a': '.-', 'b': '-...', 'c': '-.-.', 'd': '-..', 'e': '.', 'f': '..-.', 'g': '--.', 'h': '....', 'i': '..', 'j': '.---', 'k': '-.-', 'l': '.-..', 'm': '--', 'n': '-.', 'o': '---', 'p': '.--.', 'q': '--.-', 'r': '.-.', 's': '...', 't': '-', 'u': '..-', 'v': '...-', 'w': '.--', 'x': '-..-', 'y': '-.--', 'z': '--..', ' ': '/' };
         return `📡 Morse Code: <code>${text.toLowerCase().split('').map(c => code[c] || c).join(' ')}</code>`;
-      },
-      vowels: (text) => `🗣️ Vowel Count: <b>${(text.match(/[aeiou]/gi) || []).length}</b>`,
-      lorem: (count) => {
-        const words = "lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua".split(" ");
-        const n = parseInt(count) || 20;
-        let res = [];
-        for (let i = 0; i < n; i++) res.push(words[i % words.length]);
-        return `📄 <b>Lorem Output:</b><br>${res.join(' ')}.`;
       },
       theme: () => {
         document.body.classList.toggle('light-theme');
@@ -222,7 +203,7 @@
         navigator.clipboard.writeText(text);
         return `📋 Copied to clipboard: "<b>${text}</b>"`;
       },
-      clear: () => { chat.innerHTML = ''; return "🧹 Chat cleared!"; },
+      clear: () => { chat.innerHTML = ''; return "🧹 Chat Cleared!"; },
       joke: () => {
         const jokes = [
           "Why do programmers prefer dark mode? Because light attracts bugs!",
@@ -243,11 +224,6 @@
         if (!text) return "⚠️ Usage: `qrcode [link or text]`";
         const url = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(text)}`;
         return `🔳 <b>QR Code:</b><br><img src="${url}" alt="QR" style="margin-top:8px; border-radius:4px;">`;
-      },
-      striphtml: (html) => {
-        const tmp = document.createElement("DIV");
-        tmp.innerHTML = html;
-        return `🧹 Plain Text: <b>${tmp.textContent || tmp.innerText || ""}</b>`;
       },
       age: (birthYear) => {
         const y = parseInt(birthYear);
@@ -277,7 +253,7 @@
       if (lower.startsWith('alarm')) return sparkFunctions.alarm(clean.replace(/alarm/i, '').trim());
       if (lower === 'date' || lower.includes('date today')) return sparkFunctions.date();
       if (lower === 'time' || lower.includes('hour') || lower.includes('minute')) return sparkFunctions.time();
-      if (lower.startsWith('reverse') || lower.startsWith('reserve')) return sparkFunctions.reverse(clean.replace(/re[sv]erve/i, '').trim());
+      if (lower.startsWith('reserve')) return sparkFunctions.reverse(clean.replace(/reserve/i, '').trim());
       
       // Inline Math Evaluation detection (e.g., "4+7", "82838/25")
       if (/^[0-9+\-*/().\s]+$/.test(clean) && /[+\-*/]/.test(clean)) {
